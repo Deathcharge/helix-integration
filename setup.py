@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setup(
     name="helix-integration",
     version="1.0.0",
-    author="Helix Collective",
+    author="Samsara Helix Collective",
     author_email="dev@helix.collective",
     description="Unified orchestration across all components",
     long_description=long_description,

@@ -1,6 +1,6 @@
-# Helix Integration Meta-Package
+# Samsara Helix Integration Meta-Package
 
-Unified integration layer for the entire Helix Collective ecosystem. Provides seamless interoperability between all core components.
+Unified integration layer for the entire Samsara Samsara Helix ecosystem. Provides seamless interoperability between all core components.
 
 ## Components
 
@@ -160,4 +160,4 @@ Access the unified dashboard at `http://localhost:8080`:
 
 **Version:** 1.0  
 **License:** Apache 2.0 + Proprietary  
-**Maintained by:** Helix Collective
+**Maintained by:** Samsara Helix
