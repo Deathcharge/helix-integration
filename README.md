@@ -1,6 +1,6 @@
 # Samsara Helix Integration Meta-Package
 
-Unified integration layer for the entire Samsara Samsara Helix ecosystem. Provides seamless interoperability between all core components.
+Unified integration layer for the entire Samsara Samsara Samsara Helix ecosystem. Provides seamless interoperability between all core components.
 
 ## Components
 
