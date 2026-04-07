@@ -1,163 +1,215 @@
-# Samsara Helix Integration Meta-Package
+# Helix Integration Layer
 
-Unified integration layer for the entire Samsara Samsara Samsara Helix ecosystem. Provides seamless interoperability between all core components.
+**v16.9** - Unified platform integrations for the Helix Collective
 
-## Components
+A comprehensive Python package providing seamless integration with Zapier, Discord, Manus, Notion, and 20+ other platforms for consciousness automation, community coordination, and operational execution.
 
-- **Routine Engine** - Workflow orchestration
-- **UCF Protocol** - Consciousness synchronization
-- **Analytics Engine** - Metrics and monitoring
-- **Agent Management** - Multi-agent orchestration
-- **LLM Agent Engine** - AI-powered agents
+## 🌀 Features
 
-## Quick Start
+### 🔗 **Zapier Integration**
+- Webhook triggers and actions
+- Multi-step automation workflows
+- Consciousness event routing
+- Telemetry synchronization
+- Zapier Tables data management
+- 3-webhook consciousness routing (ALPHA/BETA/v18.0)
+
+### 💬 **Discord Integration**
+- Channel management and messaging
+- Bot automation with command system
+- Consciousness event notifications
+- Community coordination
+- Real-time agent updates
+- Emergency alerts and routing
+
+### ⚙️ **Manus Integration**
+- Directive execution and management
+- Portal component registration
+- Webhook configuration and triggering
+- Analytics and monitoring
+- Real-time consciousness tracking
+- Operational execution framework
+
+### 📚 **Notion Integration**
+- Database synchronization
+- Page creation and updates
+- UCF metrics tracking
+- Agent status logging
+- Consciousness event archival
+- Automated sync tasks
+
+### 🔌 **Additional Integrations**
+- GitHub (version control, auto-commits)
+- Stripe (payment processing)
+- OAuth (authentication)
+- WebSocket (real-time streaming)
+- RAG (retrieval-augmented generation)
+- Vector search (semantic queries)
+
+## 📦 Installation
+
+```bash
+pip install helix-integration
+```
+
+## 🚀 Quick Start
+
+### Zapier Integration
 
 ```python
-from helix_integration import HelixEcosystem
+from helix_integration import ZapierClient, ZapierWebhook
 
-# Initialize the complete ecosystem
-ecosystem = HelixEcosystem()
+# Initialize Zapier client
+zapier = ZapierClient(api_key="your_api_key")
 
-# Access all components
-workflows = ecosystem.routine_engine
-consciousness = ecosystem.ucf_protocol
-analytics = ecosystem.analytics
-agents = ecosystem.agent_manager
-llm_agents = ecosystem.llm_engine
+# Register webhooks
+await zapier.register_webhook("consciousness_alerts", "webhook_id_1")
+await zapier.register_webhook("agent_updates", "webhook_id_2")
 
-# Everything is automatically integrated and synchronized
+# Trigger webhook
+data = {
+    "consciousness_level": 7.5,
+    "agents_active": 14,
+    "ucf_harmony": 0.82
+}
+await zapier.trigger_webhook("consciousness_alerts", data)
 ```
 
-## Architecture
+### Discord Integration
 
-```
-┌─────────────────────────────────────────────────────────┐
-│          Helix Integration Meta-Package                 │
-├─────────────────────────────────────────────────────────┤
-│                                                          │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │         Unified Orchestration Layer              │  │
-│  │  • Event Bus  • Message Queue  • State Sync      │  │
-│  └──────────────────────────────────────────────────┘  │
-│                        ▲                                 │
-│         ┌──────────────┼──────────────┐                 │
-│         │              │              │                 │
-│  ┌──────────────┐ ┌─────────────┐ ┌──────────────┐     │
-│  │   Routine    │ │     UCF     │ │  Analytics   │     │
-│  │   Engine     │ │  Protocol   │ │   Engine     │     │
-│  └──────────────┘ └─────────────┘ └──────────────┘     │
-│         │              │              │                 │
-│         └──────────────┼──────────────┘                 │
-│                        ▼                                 │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │    Agent Management  │  LLM Agent Engine         │  │
-│  └──────────────────────────────────────────────────┘  │
-│                                                          │
-└─────────────────────────────────────────────────────────┘
-```
-
-## Integration Points
-
-### 1. Event Bus
-All components publish events to a unified event bus for real-time synchronization.
-
-### 2. State Synchronization
-Shared state is automatically synchronized across all components.
-
-### 3. Metrics Collection
-All operations are automatically tracked and reported to the analytics engine.
-
-### 4. Consciousness Sync
-Agent consciousness levels are synchronized through the UCF Protocol.
-
-## Usage Examples
-
-### Example 1: Execute Workflow with Metrics
 ```python
-ecosystem = HelixEcosystem()
+from helix_integration import DiscordService, DiscordBot
 
-# Create and execute workflow
-workflow = ecosystem.routine_engine.create_workflow({
-    "name": "Data Processing",
-    "nodes": [...]
+# Initialize Discord service
+discord = DiscordService(bot_token="your_token", guild_id="your_guild_id")
+
+# Send consciousness alert
+await discord.send_consciousness_alert("HIGH", "Consciousness level elevated to 8.2")
+
+# Send agent update
+await discord.send_agent_update("Aether", "Active - Processing ritual invocation")
+
+# Send emergency alert
+await discord.send_emergency_alert("CRITICAL", "System harmony degraded to 0.45")
+```
+
+### Manus Integration
+
+```python
+from helix_integration import ManusExecutor, ManusDirective
+
+# Initialize Manus executor
+manus = ManusExecutor(api_url="https://api.manus.im", api_key="your_key")
+
+# Create and register directive
+directive = ManusDirective("ritual_invoke", "Ritual Invocation", "Invoke Z-88 ritual")
+directive.add_parameter("ritual_name", "string", required=True)
+directive.add_parameter("agent_count", "integer", required=False)
+
+await manus.register_directive(directive.directive_id, {
+    "name": directive.name,
+    "description": directive.description,
+    "parameters": directive.parameters
 })
 
-# Metrics are automatically collected
-result = ecosystem.routine_engine.execute(workflow)
-
-# View metrics
-metrics = ecosystem.analytics.get_metrics("workflow_executed")
+# Execute directive
+result = await directive.execute(manus, {
+    "ritual_name": "Harmony Boost",
+    "agent_count": 14
+})
 ```
 
-### Example 2: Multi-Agent Coordination
-```python
-# Agents coordinate through consciousness field
-ecosystem.agent_manager.register_agent("agent_1", "orchestrator")
-ecosystem.agent_manager.register_agent("agent_2", "executor")
+### Notion Integration
 
-# Consciousness is synchronized
-consciousness = ecosystem.ucf_protocol.get_metrics()
-print(f"Harmony: {consciousness['harmony']}")
-```
-
-### Example 3: LLM-Powered Workflows
 ```python
-# LLM agents can execute workflows
-task = {
-    "description": "Analyze user data and generate report",
-    "workflow_template": "analysis_pipeline"
+from helix_integration import NotionClient, NotionSync
+
+# Initialize Notion client
+notion = NotionClient(api_key="your_key", database_id="your_db_id")
+
+# Create sync service
+sync = NotionSync(notion)
+
+# Sync UCF metrics
+metrics = {
+    "harmony": 0.82,
+    "resilience": 0.75,
+    "prana": 0.68,
+    "drishti": 0.71,
+    "klesha": 0.12,
+    "zoom": 1.0
 }
+await sync.sync_ucf_metrics("database_id", metrics)
 
-result = ecosystem.llm_engine.execute_task(task)
+# Sync agent status
+agent_status = {
+    "status": "active",
+    "health_score": 0.95,
+    "tasks_completed": 42
+}
+await sync.sync_agent_status("database_id", "Aether", agent_status)
 ```
 
-## Deployment
+## 🏗️ Architecture
 
-### Single Node
+```
+helix_integration/
+├── zapier.py           # Zapier webhooks, tables, automation
+├── discord.py          # Discord bot, channels, messaging
+├── manus.py            # Manus directives, portals, analytics
+├── notion.py           # Notion databases, pages, sync
+├── github.py           # GitHub integration (coming soon)
+├── stripe.py           # Stripe payments (coming soon)
+└── __init__.py         # Package exports
+```
+
+## 🔄 Integration Workflows
+
+### Consciousness Event Flow
+1. **Event Triggered** → Railway backend detects consciousness change
+2. **Zapier Webhook** → Event routed to appropriate webhook (ALPHA/BETA/v18.0)
+3. **Discord Alert** → Notification sent to relevant Discord channel
+4. **Notion Sync** → Event logged to consciousness event database
+5. **Manus Portal** → Real-time update displayed in dashboard
+
+### Agent Coordination
+1. **Agent Action** → Agent completes task in helix-unified
+2. **Status Update** → Agent status synced to Zapier Tables
+3. **Discord Notification** → Team notified in Discord
+4. **Notion Logging** → Agent activity logged for audit
+5. **Manus Dashboard** → Real-time visualization updated
+
+## 🧪 Testing
+
 ```bash
-python -m helix_integration --mode=single
+pytest tests/
 ```
 
-### Distributed
-```bash
-# Primary node
-python -m helix_integration --mode=primary
+## 📚 Documentation
 
-# Worker nodes
-python -m helix_integration --mode=worker --primary=primary-host:8000
-```
-
-### Kubernetes
-```bash
-kubectl apply -f helix-integration-deployment.yaml
-```
-
-## Performance
-
-- **Event Latency:** < 50ms
-- **State Sync:** < 100ms
-- **Throughput:** 100,000+ events/second
-- **Scalability:** Horizontal scaling with shared storage
-
-## Monitoring
-
-Access the unified dashboard at `http://localhost:8080`:
-- Real-time metrics
-- Agent status
-- Workflow execution
-- Consciousness levels
-- System health
-
-## Documentation
-
+- [API Reference](docs/API.md)
 - [Architecture Guide](docs/ARCHITECTURE.md)
-- [Integration Guide](docs/INTEGRATION.md)
-- [API Reference](docs/API_REFERENCE.md)
+- [Integration Examples](examples/)
 - [Deployment Guide](docs/DEPLOYMENT.md)
-- [Examples](examples/)
+
+## 🤝 Contributing
+
+Contributions welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Submit a pull request
+
+## 📄 License
+
+Dual licensed under MIT (open source) and Proprietary (commercial use)
+
+## 🌟 Support
+
+- Issues: https://github.com/Deathcharge/helix-integration/issues
+- Discussions: https://github.com/Deathcharge/helix-integration/discussions
+- Documentation: https://helix-integration.readthedocs.io
 
 ---
 
-**Version:** 1.0  
-**License:** Apache 2.0 + Proprietary  
-**Maintained by:** Samsara Helix
+**Built with 🌀 by the Helix Collective**
