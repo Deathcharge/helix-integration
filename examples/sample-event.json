@@ -1,0 +1,10 @@
+{
+  "authorization": "Bearer demo-token-value",
+  "event": "support.requested",
+  "message": "Please reply to person@example.com from 192.0.2.10",
+  "metadata": {
+    "attempt": 1,
+    "client_secret": "demo-client-secret",
+    "token_count": 42
+  }
+}
