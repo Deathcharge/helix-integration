@@ -37,7 +37,7 @@ def _positive_int(value: str) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="helix-integration",
+        prog="samsarix-guard",
         description="Scan or redact sensitive values in local text, JSON, and JSONL payloads.",
     )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")

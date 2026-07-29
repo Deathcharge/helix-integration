@@ -3,13 +3,15 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "helix-integration"
+name = "samsarix-integration-guard"
 version = "0.2.0"
 description = "Offline scanning and redaction for text, JSON, and JSONL integration payloads"
 readme = "README.md"
 requires-python = ">=3.10"
-license-files = ["LICENSE"]
-authors = [{ name = "Helix Collective" }]
+license = "MPL-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "Samsarix LLC", email = "contact@samsarix.com" }]
+maintainers = [{ name = "Samsarix Support", email = "support@samsarix.com" }]
 keywords = ["pii", "redaction", "privacy", "secrets", "integration"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -32,19 +34,21 @@ dev = [
 ]
 
 [project.scripts]
-helix-integration = "helix_integration.cli:main"
+samsarix-guard = "samsarix_guard.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/Deathcharge/helix-integration"
-Repository = "https://github.com/Deathcharge/helix-integration.git"
-Issues = "https://github.com/Deathcharge/helix-integration/issues"
+Homepage = "https://www.samsarix.com"
+Repository = "https://github.com/Deathcharge/samsarix-integration-guard.git"
+Issues = "https://github.com/Deathcharge/samsarix-integration-guard/issues"
+Licensing = "https://github.com/Deathcharge/samsarix-integration-guard/blob/main/LICENSING.md"
+Support = "https://github.com/Deathcharge/samsarix-integration-guard/blob/main/SUPPORT.md"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["helix_integration"]
+include = ["samsarix_guard"]
 
 [tool.ruff]
 target-version = "py310"

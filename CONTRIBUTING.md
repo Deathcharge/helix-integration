@@ -20,3 +20,9 @@ bounded enough for untrusted input.
 Do not expand or claim support for `legacy/` modules without extracting their
 dependencies, defining a public contract, threat-modeling side effects, and adding
 end-to-end tests.
+
+Unless agreed otherwise in writing, contributions are submitted under the
+Mozilla Public License 2.0 as described in [`LICENSING.md`](LICENSING.md). By
+submitting a contribution, you represent that you have the right to do so. For
+licensing questions, contact `contact@samsarix.com`; for security reports, follow
+[`SECURITY.md`](SECURITY.md).

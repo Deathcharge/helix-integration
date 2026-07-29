@@ -9,10 +9,21 @@ from email.parser import BytesParser
 from pathlib import Path
 
 REQUIRED_MODULES = {
-    "helix_integration/__init__.py",
-    "helix_integration/__main__.py",
-    "helix_integration/cli.py",
-    "helix_integration/redaction.py",
+    "samsarix_guard/__init__.py",
+    "samsarix_guard/__main__.py",
+    "samsarix_guard/cli.py",
+    "samsarix_guard/redaction.py",
+}
+REQUIRED_SDIST_FILES = {
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "LICENSE",
+    "LICENSING.md",
+    "NOTICE",
+    "README.md",
+    "SECURITY.md",
+    "SUPPORT.md",
+    "TRADEMARKS.md",
 }
 
 
@@ -27,11 +38,11 @@ def verify_wheel(path: Path) -> None:
         if missing:
             fail(f"wheel is missing {sorted(missing)}")
         if any("legacy" in name.casefold() or "saas_router" in name.casefold() for name in names):
-            fail("wheel contains legacy Helix Unified code")
+            fail("wheel contains the legacy Helix Unified snapshot")
         unexpected_code = {
             name
             for name in names
-            if name.endswith(".py") and not name.startswith("helix_integration/")
+            if name.endswith(".py") and not name.startswith("samsarix_guard/")
         }
         if unexpected_code:
             fail(f"wheel contains unexpected Python modules: {sorted(unexpected_code)}")
@@ -40,6 +51,10 @@ def verify_wheel(path: Path) -> None:
         if len(metadata_names) != 1:
             fail("wheel must contain exactly one METADATA file")
         metadata = BytesParser().parsebytes(archive.read(metadata_names[0]))
+        if metadata.get("Name") != "samsarix-integration-guard":
+            fail(f"wheel has unexpected project name: {metadata.get('Name')!r}")
+        if metadata.get("License-Expression") != "MPL-2.0":
+            fail(f"wheel has unexpected license: {metadata.get('License-Expression')!r}")
         runtime_requirements = [
             requirement
             for requirement in metadata.get_all("Requires-Dist", [])
@@ -47,6 +62,17 @@ def verify_wheel(path: Path) -> None:
         ]
         if runtime_requirements:
             fail(f"wheel has runtime dependencies: {runtime_requirements}")
+        if not any(name.endswith(".dist-info/licenses/LICENSE") for name in names):
+            fail("wheel does not contain LICENSE")
+        if not any(name.endswith(".dist-info/licenses/NOTICE") for name in names):
+            fail("wheel does not contain NOTICE")
+
+        entry_point_names = [name for name in names if name.endswith(".dist-info/entry_points.txt")]
+        if len(entry_point_names) != 1:
+            fail("wheel must contain exactly one entry_points.txt file")
+        entry_points = archive.read(entry_point_names[0]).decode("utf-8")
+        if "samsarix-guard = samsarix_guard.cli:main" not in entry_points:
+            fail("wheel does not expose the samsarix-guard command")
 
 
 def verify_sdist(path: Path) -> None:
@@ -58,6 +84,9 @@ def verify_sdist(path: Path) -> None:
         missing = {f"src/{module}" for module in REQUIRED_MODULES} - suffixes
         if missing:
             fail(f"source distribution is missing {sorted(missing)}")
+        missing_files = REQUIRED_SDIST_FILES - suffixes
+        if missing_files:
+            fail(f"source distribution is missing {sorted(missing_files)}")
 
 
 def main(arguments: list[str]) -> int:

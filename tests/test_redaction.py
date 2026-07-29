@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from helix_integration import RedactionLimitError, Redactor
+from samsarix_guard import RedactionLimitError, Redactor
 
 
 class TextRedactionTests(unittest.TestCase):

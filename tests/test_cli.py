@@ -16,7 +16,7 @@ def run_cli(*arguments: str, input_text: str | None = None) -> subprocess.Comple
     environment = os.environ.copy()
     environment["PYTHONPATH"] = str(SOURCE)
     return subprocess.run(
-        [sys.executable, "-m", "helix_integration", *arguments],
+        [sys.executable, "-m", "samsarix_guard", *arguments],
         cwd=REPOSITORY,
         env=environment,
         input=input_text,
@@ -120,7 +120,7 @@ class CLITests(unittest.TestCase):
         completed = run_cli("--version")
 
         self.assertEqual(completed.returncode, 0)
-        self.assertEqual(completed.stdout.strip(), "helix-integration 0.2.0")
+        self.assertEqual(completed.stdout.strip(), "samsarix-guard 0.2.0")
 
 
 if __name__ == "__main__":

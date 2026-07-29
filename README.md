@@ -1,6 +1,7 @@
-# Helix Integration Guard
+# Samsarix Integration Guard
 
-Helix Integration Guard is a local Python library and command-line tool that
+Samsarix Integration Guard is a local Python library and command-line tool from
+Samsarix LLC that
 detects and redacts common secrets and personally identifiable information (PII)
 before text, logs, webhook events, or JSON payloads are sent to another system.
 
@@ -17,10 +18,10 @@ and reports categories and counts without echoing detected values.
 Prerequisites: Python 3.10 or newer.
 
 ```console
-git clone https://github.com/Deathcharge/helix-integration.git
-cd helix-integration
+git clone https://github.com/Deathcharge/samsarix-integration-guard.git
+cd samsarix-integration-guard
 python -m pip install .
-python -m helix_integration redact examples/sample-event.json
+python -m samsarix_guard redact examples/sample-event.json
 ```
 
 The example emits valid JSON with sensitive keys and detected values replaced by
@@ -29,7 +30,7 @@ labels such as `[REDACTED:sensitive_key]` and `[REDACTED:email]`.
 To write a separate file and print a count-only report to stderr:
 
 ```console
-helix-integration redact examples/sample-event.json --output sanitized.json --report
+samsarix-guard redact examples/sample-event.json --output sanitized.json --report
 ```
 
 The command refuses to use the input path as its output path. Output files are
@@ -42,7 +43,7 @@ returns `0` when no finding is detected, `1` when findings exist, and `2` for an
 input or processing error.
 
 ```console
-helix-integration scan examples/sample-event.json
+samsarix-guard scan examples/sample-event.json
 ```
 
 Example report:
@@ -55,17 +56,17 @@ Use `-` or omit the input path to read stdin. Specify `--format text`,
 `--format json`, or `--format jsonl` when automatic detection is not appropriate.
 
 ```console
-helix-integration redact --format jsonl < events.jsonl > safe-events.jsonl
+samsarix-guard redact --format jsonl < events.jsonl > safe-events.jsonl
 ```
 
-Run `helix-integration --help` and `helix-integration redact --help` for all
+Run `samsarix-guard --help` and `samsarix-guard redact --help` for all
 options. Inputs default to a 1 MiB limit; change it with `--max-bytes` only when the
 pipeline has an appropriate CPU and memory budget.
 
 ## Python API
 
 ```python
-from helix_integration import Redactor
+from samsarix_guard import Redactor
 
 redactor = Redactor(extra_sensitive_keys=["customer_reference"])
 result = redactor.redact_data(
@@ -148,6 +149,11 @@ network connections, persist state, load plugins, execute input, or log payloads
 Anyone who can read the input, process memory, or chosen output already crosses the
 tool's trust boundary. Protect those locations with normal OS access controls.
 
+This repository is independently installable and has no runtime dependency on
+other Samsarix or historical Helix repositories. Those repositories provide
+useful ecosystem context, but are not required for this package's supported
+journey.
+
 The initial `helix-unified` extraction remains under
 [`legacy/helix_unified_snapshot`](legacy/helix_unified_snapshot) for provenance.
 It is excluded from the distribution and is not a supported API or runnable
@@ -169,14 +175,17 @@ such as [Microsoft Presidio](https://microsoft.github.io/presidio/). Its own
 documentation likewise warns that automated detection does not guarantee finding
 all sensitive information.
 
-## Security and license status
+## Security, support, and licensing
 
-Report vulnerabilities privately through the repository owner's preferred
-security channel; do not include real secrets or personal data in a public issue.
-See [`SECURITY.md`](SECURITY.md) for supported scope and reporting guidance.
+Report vulnerabilities privately through a GitHub security advisory or email
+[`support@samsarix.com`](mailto:support@samsarix.com); do not include real secrets
+or personal data in a public issue. See [`SECURITY.md`](SECURITY.md) and
+[`SUPPORT.md`](SUPPORT.md) for scope and contact guidance.
 
-The repository contains a Business Source License 1.1 text whose `Licensed Work`
-field names “Helix Licensing System,” not this package. Package metadata no longer
-makes the previous contradictory MIT claim. The owner must clarify the license's
-scope before public distribution or third-party production adoption. See
-[`LICENSE`](LICENSE) and the external-gates section of the productization record.
+Copyright 2026 Samsarix LLC and contributors. The supported project is licensed
+under the [Mozilla Public License 2.0](LICENSE), which keeps modifications to
+covered source files available under the MPL while allowing those files to be
+combined with a larger work under other terms. See [`LICENSING.md`](LICENSING.md)
+for scope and contribution details, [`NOTICE`](NOTICE) for attribution, and
+[`TRADEMARKS.md`](TRADEMARKS.md) for brand-use guidance. General inquiries may be
+sent to [`contact@samsarix.com`](mailto:contact@samsarix.com).

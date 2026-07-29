@@ -3,7 +3,8 @@
 Last updated: 2026-07-28
 
 This is the living decision, implementation, and release record for
-`Deathcharge/helix-integration`. Command results are recorded only when actually
+`Deathcharge/samsarix-integration-guard` (renamed from `helix-integration`).
+Command results are recorded only when actually
 run in this repository.
 
 ## Repository assessment
@@ -35,7 +36,8 @@ from builds and support claims, and documented as provenance.
 
 ## Chosen product
 
-**Helix Integration Guard** is a zero-runtime-dependency Python library and CLI for
+**Samsarix Integration Guard** is a zero-runtime-dependency Python library and CLI
+from Samsarix LLC for
 bounded, deterministic scanning and irreversible redaction of common secrets and
 PII in local text, JSON, and JSONL integration payloads.
 
@@ -44,18 +46,19 @@ PII in local text, JSON, and JSONL integration payloads.
 - **Problem:** sensitive values are easily copied into outbound payloads and logs;
   teams need a small preflight control that is simple to install, audit, script,
   and run offline.
-- **Primary journey:** install locally; run `helix-integration redact input.json
+- **Primary journey:** install locally; run `samsarix-guard redact input.json
   --output safe.json --report`; receive a complete redacted payload plus a report
   that contains categories and counts but no matched values; optionally use
   `scan` as a CI gate.
 - **Independent reason to exist:** it does not import or call `helix-unified`, need
-  a hosted Helix service, or duplicate the flagship application. It is useful in
+  another Samsarix/Helix repository, or require a hosted service. The broader
+  portfolio exists and provides context, but this package is useful on its own in
   any integration pipeline.
 - **Product form:** Python package and CLI, not a web application or hosted proxy.
 
 ## Product and architecture decisions
 
-1. The installed package lives under `src/helix_integration/`; the monolith
+1. The installed package lives under `src/samsarix_guard/`; the monolith
    extraction is a non-packaged legacy snapshot.
 2. The supported path uses only the Python standard library. This keeps first-run
    setup deterministic and offline after installation, and avoids NLP model or
@@ -74,9 +77,9 @@ PII in local text, JSON, and JSONL integration payloads.
    after successful output and 2 on error.
 8. The package performs no network access, telemetry, credential storage,
    pseudonymization, or reversible encryption.
-9. Public distribution is deferred until the owner clarifies the checked-in
-   license text. Package metadata includes the file without making a contradictory
-   license claim.
+9. The supported tree is licensed under MPL-2.0. Package metadata, the unmodified
+   license text, attribution notice, licensing explanation, contribution terms,
+   and trademark guidance consistently identify Samsarix LLC.
 
 ## Assumptions
 
@@ -86,8 +89,9 @@ PII in local text, JSON, and JSONL integration payloads.
   in this repository than an ML/NLP detector.
 - Replacement labels are appropriate for outbound copies; this product does not
   modify source data in place.
-- GitHub is the initial source distribution and issue channel. No package registry,
-  domain, billing account, or production service is assumed.
+- GitHub is the initial source distribution and issue channel. The working support
+  contacts are `contact@samsarix.com` and `support@samsarix.com`. No package
+  registry, billing account, or production service is assumed.
 
 ## Bounded ecosystem research
 
@@ -108,6 +112,19 @@ PII in local text, JSON, and JSONL integration payloads.
 - The [Python packaging specification](https://packaging.python.org/en/latest/specifications/pyproject-toml/)
   defines `[project.scripts]` console entry points. The release uses that standard
   and removes duplicate `setup.py` metadata.
+- The [Mozilla Public License 2.0](https://www.mozilla.org/MPL/2.0/) provides
+  source-code and patent grants, requires preservation of notices, and does not
+  grant trademark rights. Mozilla's
+  [MPL FAQ](https://www.mozilla.org/MPL/2.0/FAQ/) describes its file-level
+  copyleft: covered-file modifications stay available under the MPL, while the
+  files can be combined with a larger work under different terms. This is the
+  chosen balance between adoption, attribution, and protection for a reusable
+  library.
+- MariaDB's [Business Source License 1.1](https://mariadb.com/bsl11/) limits
+  production use before a future change date and is not open source during that
+  period. That is a worse fit for broad adoption of this local developer tool
+  than MPL-2.0. This product record explains the project choice; it is not legal
+  advice.
 
 ## Baseline command results
 
@@ -143,8 +160,9 @@ coverage, and production readiness. Those claims were false at baseline.
   it with behavior-based setup, scope, limitations, and release status.
 - [x] The public tree imports private Helix services. Isolated it from the package
   and quality claims under `legacy/`.
-- [x] Package metadata claims MIT while the repository contains a BSL 1.1 text.
-  Removed the MIT claim; final license scope remains owner-blocked.
+- [x] Package metadata claimed MIT while the repository contained a mismatched BSL
+  1.1 text. Replaced both with an owner-approved, internally consistent MPL-2.0
+  model and Samsarix LLC attribution/support documents.
 
 ### P1 — credibility, safety, and reliability
 
@@ -201,8 +219,8 @@ coverage, and production readiness. Those claims were false at baseline.
 - Ruff, strict mypy on the supported source, unit/command tests, build, artifact
   verification, and wheel smoke tests pass.
 - No legacy module appears in the wheel or source distribution.
-- Documentation makes detection limits, trust boundaries, legacy status, and
-  license gate explicit.
+- Documentation makes detection limits, trust boundaries, legacy status, license,
+  ownership, support, and trademark boundaries explicit.
 - No locally actionable P0 remains.
 
 ## Completed work
@@ -214,22 +232,22 @@ and a CPU-heavy 10 MiB default.
 
 ## Deferred and externally blocked work
 
-### Owner/legal gate
+### Licensing decision resolved
 
-The checked-in BSL 1.1 parameters name “Helix Licensing System” as the Licensed
-Work and state a 2024 copyright, while this repository is `helix-integration` and
-was extracted in 2026. The previous package metadata claimed MIT. The owner or
-qualified counsel must specify whether the file applies to this repository,
-correct its parameters if intended, and approve publication. Verification: the
-license file, package metadata, README, and repository settings must agree.
+The prior BSL 1.1 parameters named a different work (“Helix Licensing System”)
+while package metadata claimed MIT. The owner supplied the current Samsarix LLC
+identity and asked for a protective, attribution-preserving license. MPL-2.0 was
+selected for its file-level copyleft and compatibility with larger open or
+proprietary works. `LICENSE`, package metadata, `NOTICE`, `LICENSING.md`,
+`CONTRIBUTING.md`, `TRADEMARKS.md`, and the user documentation now agree. Formal
+legal advice remains the owner's responsibility.
 
 ### Publication gate
 
-No package index project, signing identity, release token, protected environment,
-or approval was provided. After the license gate, the owner must choose a version,
-create/approve the release, configure trusted publishing, and verify installation
-from the public index. No package was published or production infrastructure
-changed in this work.
+No package index project, signing identity, release token, or protected publishing
+environment was provided. The owner must approve a public release, configure
+trusted publishing, and verify installation from the public index. No package was
+published or production infrastructure changed in this work.
 
 ### Legacy portfolio decision
 
@@ -255,7 +273,7 @@ tests are independently defined.
 ## Distribution and sustainability
 
 The simplest distribution is a signed source release and pure-Python wheel from
-GitHub/PyPI after the owner resolves licensing. The tool has no hosted operating
+GitHub/PyPI after hosted CI and publication approval. The tool has no hosted operating
 cost: CPU and memory scale with the caller's bounded input, and there are no API,
 model, telemetry, database, or network charges.
 
@@ -277,19 +295,19 @@ run after the hardening pass unless explicitly described as a probe.
 | `python -m bandit -q -r src` | Exit 0 with no findings. |
 | `python -m compileall -q src tests scripts` | Exit 0. |
 | `git diff --check` | Exit 0. |
-| `python -m build` | Exit 0 in isolated build environments; produced the 0.2.0 sdist and pure-Python wheel. |
-| `python scripts/verify_distribution.py dist` | Exit 0; one wheel and one sdist verified, with no legacy code or runtime dependency in the wheel. |
+| `python -m build` | Exit 0 in isolated build environments; produced `samsarix_integration_guard-0.2.0.tar.gz` and the pure-Python wheel. |
+| `python scripts/verify_distribution.py dist` | Exit 0; one wheel and one sdist verified. The wheel contains the expected name, namespace, entry point, MPL license/notice, and no runtime dependency; neither artifact contains legacy code. |
 | 1 MiB adversarial text probe | Two maximum-default strings scanned in about 2.026 seconds total with zero false detections on this host. This is an observation, not a cross-platform SLA. |
 
 The wheel was then installed with `--no-deps` into a newly created temporary venv.
 Inside that environment:
 
-- `helix-integration --version` printed `helix-integration 0.2.0`;
-- `helix-integration redact examples/sample-event.json --output <temp>/safe.json --report`
+- `samsarix-guard --version` printed `samsarix-guard 0.2.0`;
+- `samsarix-guard redact examples/sample-event.json --output <temp>/safe.json --report`
   exited 0 and reported four findings without values;
-- `helix-integration scan <temp>/safe.json` exited 0 with `changed: false` and
+- `samsarix-guard scan <temp>/safe.json` exited 0 with `changed: false` and
   zero detections;
-- `from helix_integration import Redactor` succeeded and redacted a synthetic
+- `from samsarix_guard import Redactor` succeeded and redacted a synthetic
   email; and
 - the temporary environment and output were removed after verification.
 
@@ -321,8 +339,8 @@ Inside that environment:
   compliance benchmark.
 - Formal regex fuzzing, property testing, and a cross-platform performance suite
   remain P2.
-- License applicability cannot be validated technically and remains an owner/legal
-  gate.
+- License selection is documented and internally consistent, but this engineering
+  review is not a substitute for advice from qualified counsel.
 
 ### Release disposition
 
@@ -331,11 +349,10 @@ for the supported redaction journey are closed, local checks are green, and the
 wheel is independently installable. It should not be publicly published or
 described as production-ready until:
 
-1. the owner clarifies/corrects the license scope;
-2. the hosted CI matrix passes on the target GitHub repository; and
-3. the owner approves the version and publication/signing path.
+1. the hosted CI matrix passes on the target GitHub repository; and
+2. the owner approves the version and publication/signing path.
 
-Remaining work ordered by value is the license/CI/publication gates above, then the
+Remaining work ordered by value is the CI/publication gates above, then the
 P2 detector-locale fixtures, fuzz/performance suite, transactional streaming for
 larger JSONL inputs, safe organization policy schema, and signed artifact
 provenance. None is silently required for the documented local 0.2.0 journey.
