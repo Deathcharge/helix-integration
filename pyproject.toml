@@ -1,32 +1,66 @@
 [build-system]
-requires = ["setuptools>=45", "wheel"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "helix-integration"
-version = "0.1.0"
-description = "Platform connectors for Zapier, Discord, Manus, and more"
+name = "samsarix-integration-guard"
+version = "0.2.0"
+description = "Offline scanning and redaction for text, JSON, and JSONL integration payloads"
 readme = "README.md"
-requires-python = ">=3.9"
-license = {text = "MIT"}
-authors = [
-    {name = "Helix Collective", email = "collective@helix.ai"}
-]
+requires-python = ">=3.10"
+license = "MPL-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "Samsarix LLC", email = "contact@samsarix.com" }]
+maintainers = [{ name = "Samsarix Support", email = "support@samsarix.com" }]
+keywords = ["pii", "redaction", "privacy", "secrets", "integration"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = [
-    "helix-hub-shared>=0.1.0",
-    "pydantic>=2.0",
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "build>=1.2.2",
+    "mypy>=1.13",
+    "ruff>=0.9",
 ]
 
+[project.scripts]
+samsarix-guard = "samsarix_guard.cli:main"
+
 [project.urls]
-Homepage = "https://github.com/Deathcharge/helix-integration"
-Repository = "https://github.com/Deathcharge/helix-integration.git"
-Issues = "https://github.com/Deathcharge/helix-integration/issues"
+Homepage = "https://www.samsarix.com"
+Repository = "https://github.com/Deathcharge/samsarix-integration-guard.git"
+Issues = "https://github.com/Deathcharge/samsarix-integration-guard/issues"
+Licensing = "https://github.com/Deathcharge/samsarix-integration-guard/blob/main/LICENSING.md"
+Support = "https://github.com/Deathcharge/samsarix-integration-guard/blob/main/SUPPORT.md"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["samsarix_guard"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+files = ["src"]
+pretty = true
+show_error_codes = true
