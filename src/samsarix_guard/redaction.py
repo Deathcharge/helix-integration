@@ -345,11 +345,14 @@ class Redactor:
         counts: Counter[str] = Counter()
         nodes_seen = 0
 
-        def walk(value: Any, depth: int) -> Any:
+        def count_node() -> None:
             nonlocal nodes_seen
             nodes_seen += 1
             if nodes_seen > self.max_nodes:
                 raise RedactionLimitError(f"structured input exceeds max_nodes={self.max_nodes}")
+
+        def walk(value: Any, depth: int) -> Any:
+            count_node()
             if depth > self.max_depth:
                 raise RedactionLimitError(f"structured input exceeds max_depth={self.max_depth}")
 
@@ -369,6 +372,9 @@ class Redactor:
                     if not isinstance(key, str):
                         raise TypeError("structured data keys must be strings")
                     if _is_sensitive_key(key, self.extra_sensitive_keys) and child is not None:
+                        # Sensitive values are deliberately not traversed, but they still
+                        # consume work and must count toward the documented node bound.
+                        count_node()
                         if isinstance(child, str) and self._replacement_pattern.fullmatch(child):
                             output[key] = child
                         else:

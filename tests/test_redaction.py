@@ -125,6 +125,8 @@ class StructuredRedactionTests(unittest.TestCase):
             Redactor(max_depth=1).redact_data({"one": {"two": "value"}})
         with self.assertRaises(RedactionLimitError):
             Redactor(max_nodes=2).redact_data([1, 2])
+        with self.assertRaises(RedactionLimitError):
+            Redactor(max_nodes=2).redact_data({"password": "first", "authorization": "second"})
 
     def test_rejects_non_json_types(self) -> None:
         with self.assertRaisesRegex(TypeError, "unsupported"):
