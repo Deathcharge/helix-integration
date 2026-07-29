@@ -297,6 +297,7 @@ run after the hardening pass unless explicitly described as a probe.
 | `git diff --check` | Exit 0. |
 | `python -m build` | Exit 0 in isolated build environments; produced `samsarix_integration_guard-0.2.0.tar.gz` and the pure-Python wheel. |
 | `python scripts/verify_distribution.py dist` | Exit 0; one wheel and one sdist verified. The wheel contains the expected name, namespace, entry point, MPL license/notice, and no runtime dependency; neither artifact contains legacy code. |
+| GitHub Actions [push](https://github.com/Deathcharge/samsarix-integration-guard/actions/runs/30416676777) and [pull-request](https://github.com/Deathcharge/samsarix-integration-guard/actions/runs/30416698149) runs | Exit 0 for both complete runs: Python 3.10–3.13 on Ubuntu, Python 3.10 and 3.13 on Windows, and the isolated package job all passed. |
 | 1 MiB adversarial text probe | Two maximum-default strings scanned in about 2.026 seconds total with zero false detections on this host. This is an observation, not a cross-platform SLA. |
 
 The wheel was then installed with `--no-deps` into a newly created temporary venv.
@@ -329,9 +330,6 @@ Inside that environment:
 
 ### Validation not run
 
-- The GitHub Actions workflow was created but not pushed, so its Linux runs and
-  Python 3.10/3.12/3.13 jobs have not executed. Local tests cover Windows and
-  Python 3.11.9 only.
 - No package was published, signed, or installed from a public index; no production
   endpoint or external integration was contacted.
 - No live secret/PII corpus was used because that would violate fixture and data-
@@ -347,12 +345,10 @@ Inside that environment:
 **Release candidate with named external gates.** All locally actionable P0 issues
 for the supported redaction journey are closed, local checks are green, and the
 wheel is independently installable. It should not be publicly published or
-described as production-ready until:
+described as production-ready until the owner approves the version and
+publication/signing path.
 
-1. the hosted CI matrix passes on the target GitHub repository; and
-2. the owner approves the version and publication/signing path.
-
-Remaining work ordered by value is the CI/publication gates above, then the
+Remaining work ordered by value is the publication gate above, then the
 P2 detector-locale fixtures, fuzz/performance suite, transactional streaming for
 larger JSONL inputs, safe organization policy schema, and signed artifact
 provenance. None is silently required for the documented local 0.2.0 journey.
