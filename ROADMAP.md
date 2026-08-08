@@ -17,6 +17,8 @@ Current disposition: Merge the productization branch after exact-head verificati
 - Completed for 0.3: strict JSON policy files, three detector profiles, category
   controls, organization-specific sensitive keys, and expanded provider-token
   coverage without executable plugins or runtime dependencies.
+- Completed for 0.3: bounded recursive batch scans, value-free JSON/SARIF reports,
+  and a first-party GitHub Action smoke-tested from the package workflow.
 - Next: evaluate false positives and false negatives on consented representative corpora, then add bounded fuzz and performance suites.
 - Review priority: authorize license.
 - Review priority: confirm CI/wheel at merge SHA.

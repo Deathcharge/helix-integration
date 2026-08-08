@@ -46,6 +46,18 @@ input or processing error.
 samsarix-guard scan examples/sample-event.json
 ```
 
+Scan a bounded directory tree or emit SARIF 2.1.0 for GitHub code scanning:
+
+```console
+samsarix-guard scan ./outbound-events --recursive --include "*.jsonl"
+samsarix-guard scan ./outbound-events --recursive \
+  --report-format sarif --report-output samsarix-guard.sarif
+```
+
+Batch reports contain only paths, formats, categories, and counts. Hidden paths
+and symlinks are skipped, and file-count plus total-byte limits bound the job. See
+[`docs/CI.md`](docs/CI.md) for the first-party GitHub Action and SARIF workflow.
+
 Example report:
 
 ```json

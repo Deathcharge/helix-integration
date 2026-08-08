@@ -1,4 +1,6 @@
 include CHANGELOG.md
+include action.yml
+include action.yml
 include CONTRIBUTING.md
 include LICENSING.md
 include NOTICE

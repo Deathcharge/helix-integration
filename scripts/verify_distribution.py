@@ -14,6 +14,7 @@ REQUIRED_MODULES = {
     "samsarix_guard/cli.py",
     "samsarix_guard/policy.py",
     "samsarix_guard/redaction.py",
+    "samsarix_guard/reporting.py",
 }
 REQUIRED_SDIST_FILES = {
     "CHANGELOG.md",
@@ -25,6 +26,7 @@ REQUIRED_SDIST_FILES = {
     "SECURITY.md",
     "SUPPORT.md",
     "TRADEMARKS.md",
+    "action.yml",
 }
 
 

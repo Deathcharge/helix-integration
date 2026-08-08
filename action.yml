@@ -1,0 +1,85 @@
+name: Samsarix Integration Guard
+description: Scan integration payloads and logs for secrets and PII without sending data to a service.
+author: Samsarix LLC
+
+branding:
+  color: purple
+  icon: shield
+
+inputs:
+  path:
+    description: File or directory to scan.
+    required: true
+  recursive:
+    description: Set to true when path is a directory.
+    default: "false"
+  include:
+    description: Optional comma-separated directory globs.
+    default: ""
+  policy:
+    description: Optional policy path in the caller workspace.
+    default: ""
+  profile:
+    description: Built-in profile used when policy is empty.
+    default: balanced
+  report:
+    description: SARIF report path in the caller workspace.
+    default: samsarix-guard.sarif
+  upload-sarif:
+    description: Upload the report to GitHub code scanning. Requires security-events write permission.
+    default: "false"
+
+outputs:
+  sarif:
+    description: Path to the generated SARIF report.
+    value: ${{ inputs.report }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install Samsarix Integration Guard
+      shell: bash
+      env:
+        SAMSARIX_ACTION_PATH: ${{ github.action_path }}
+      run: python -m pip install --disable-pip-version-check --no-deps "$SAMSARIX_ACTION_PATH"
+
+    - name: Scan payloads
+      id: scan
+      continue-on-error: true
+      shell: bash
+      env:
+        SAMSARIX_INCLUDE: ${{ inputs.include }}
+        SAMSARIX_PATH: ${{ inputs.path }}
+        SAMSARIX_POLICY: ${{ inputs.policy }}
+        SAMSARIX_PROFILE: ${{ inputs.profile }}
+        SAMSARIX_RECURSIVE: ${{ inputs.recursive }}
+        SAMSARIX_REPORT: ${{ inputs.report }}
+      run: |
+        args=(scan "$SAMSARIX_PATH" --report-format sarif --report-output "$SAMSARIX_REPORT")
+        if [[ "$SAMSARIX_RECURSIVE" == "true" ]]; then
+          args+=(--recursive)
+        fi
+        if [[ -n "$SAMSARIX_POLICY" ]]; then
+          args+=(--policy "$SAMSARIX_POLICY")
+        else
+          args+=(--profile "$SAMSARIX_PROFILE")
+        fi
+        if [[ -n "$SAMSARIX_INCLUDE" ]]; then
+          IFS=',' read -ra patterns <<< "$SAMSARIX_INCLUDE"
+          for pattern in "${patterns[@]}"; do
+            args+=(--include "$pattern")
+          done
+        fi
+        samsarix-guard "${args[@]}"
+
+    - name: Upload SARIF
+      if: ${{ always() && inputs.upload-sarif == 'true' }}
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ inputs.report }}
+        category: samsarix-integration-guard
+
+    - name: Enforce scan result
+      if: ${{ steps.scan.outcome == 'failure' }}
+      shell: bash
+      run: exit 1

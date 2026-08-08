@@ -13,6 +13,10 @@ the supported package API.
   payment, package-registry, and email providers.
 - Kept policies dependency-free and non-executable: unknown fields, duplicate
   keys, invalid categories, invalid UTF-8, and oversized policy files fail closed.
+- Added bounded recursive directory scanning with explicit globs, hidden/symlink
+  exclusion, aggregate value-free reports, and input/report overwrite protection.
+- Added SARIF 2.1.0 output with stable non-secret fingerprints and a first-party
+  composite GitHub Action that can upload results before enforcing the scan gate.
 
 ## 0.2.0 - 2026-07-28
 
