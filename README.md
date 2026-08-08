@@ -9,7 +9,7 @@ It is for developers and operators who need a small, auditable safety layer in a
 integration pipeline. It has no runtime dependencies, makes no network requests,
 and reports categories and counts without echoing detected values.
 
-> **Maturity:** 0.2.0 release candidate. The supported redaction path is tested;
+> **Maturity:** 0.3.0 release candidate. The supported redaction path is tested;
 > automated pattern matching is not a compliance guarantee and cannot identify
 > every form of sensitive data.
 
@@ -63,6 +63,25 @@ Run `samsarix-guard --help` and `samsarix-guard redact --help` for all
 options. Inputs default to a 1 MiB limit; change it with `--max-bytes` only when the
 pipeline has an appropriate CPU and memory budget.
 
+## Repeatable policy profiles
+
+Use a built-in profile for a fast boundary or generate a strict JSON policy that
+can be reviewed and reused across environments:
+
+```console
+samsarix-guard scan payload.json --profile secrets-only
+samsarix-guard policy init --output samsarix-policy.json
+samsarix-guard policy validate samsarix-policy.json
+samsarix-guard redact payload.json --policy samsarix-policy.json
+```
+
+`balanced` detects PII and secrets, `secrets-only` permits ordinary contact data,
+and `privacy-only` ignores credential detectors. Policies can add structured-data
+keys, disable individual categories, choose a replacement label, and set byte,
+depth, and node limits. The schema rejects unknown fields and cannot load plugins
+or custom code. See [`docs/POLICIES.md`](docs/POLICIES.md) and the ready-to-edit
+[`examples/policy.json`](examples/policy.json).
+
 ## Python API
 
 ```python
@@ -93,14 +112,18 @@ The default detector covers:
 - bearer and basic authentication values, JWTs, GitHub tokens, AWS access-key IDs,
   common secret/connection assignments, secret URL query values, and PEM private-
   key blocks up to 16 KiB;
+- structured token families used by OpenAI/Anthropic, Slack, Stripe, GitLab,
+  Google APIs, npm, PyPI, SendGrid, and Hugging Face;
 - email addresses, conservatively formatted phone numbers and US Social Security
   numbers, Luhn-valid payment-card numbers, and valid IPv4 addresses.
 
-JSON keys can be extended with repeated `--sensitive-key KEY` options or the
-`extra_sensitive_keys` API argument. Detection is deliberately deterministic and
-explainable. It does not guess names, street addresses, health information, free-
-form credentials, or domain-specific identifiers. Review output and add upstream
-data minimization or a specialized detector when those categories matter.
+JSON keys can be extended with policy files, repeated `--sensitive-key KEY`
+options, or the `extra_sensitive_keys` API argument. Categories can be disabled
+through a policy, profile, `--disable-category`, or the Python API. Detection is
+deliberately deterministic and explainable. It does not guess names, street
+addresses, health information, free-form credentials, or domain-specific
+identifiers. Review output and add upstream data minimization or a specialized
+detector when those categories matter.
 
 ## Formats and failure behavior
 

@@ -12,6 +12,7 @@ REQUIRED_MODULES = {
     "samsarix_guard/__init__.py",
     "samsarix_guard/__main__.py",
     "samsarix_guard/cli.py",
+    "samsarix_guard/policy.py",
     "samsarix_guard/redaction.py",
 }
 REQUIRED_SDIST_FILES = {

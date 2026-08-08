@@ -116,11 +116,64 @@ class CLITests(unittest.TestCase):
         self.assertEqual(completed.returncode, 2)
         self.assertIn("exceeds --max-bytes=4", completed.stderr)
 
+    def test_policy_file_controls_profile_keys_and_replacement(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            policy = Path(directory) / "policy.json"
+            policy.write_text(
+                json.dumps(
+                    {
+                        "version": 1,
+                        "profile": "secrets-only",
+                        "sensitive_keys": ["customer_reference"],
+                        "replacement": "<REMOVED:{category}>",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            completed = run_cli(
+                "redact",
+                "--format",
+                "json",
+                "--policy",
+                str(policy),
+                input_text='{"email":"person@example.com","customer_reference":"C-123"}',
+            )
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        output = json.loads(completed.stdout)
+        self.assertEqual(output["email"], "person@example.com")
+        self.assertEqual(output["customer_reference"], "<REMOVED:sensitive_key>")
+
+    def test_policy_init_and_validate(self) -> None:
+        initialized = run_cli("policy", "init", "--profile", "privacy-only")
+        self.assertEqual(initialized.returncode, 0, initialized.stderr)
+        template = json.loads(initialized.stdout)
+        self.assertEqual(template["version"], 1)
+        self.assertEqual(template["profile"], "privacy-only")
+
+        with tempfile.TemporaryDirectory() as directory:
+            policy = Path(directory) / "policy.json"
+            policy.write_text(initialized.stdout, encoding="utf-8")
+            validated = run_cli("policy", "validate", str(policy))
+
+        self.assertEqual(validated.returncode, 0, validated.stderr)
+        self.assertEqual(json.loads(validated.stdout), {"profile": "privacy-only", "valid": True, "version": 1})
+
+    def test_invalid_policy_fails_without_reading_payload(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            policy = Path(directory) / "policy.json"
+            policy.write_text('{"version":2}', encoding="utf-8")
+            completed = run_cli("scan", "--policy", str(policy), input_text="person@example.com")
+
+        self.assertEqual(completed.returncode, 2)
+        self.assertEqual(completed.stdout, "")
+        self.assertIn("policy version", completed.stderr)
+
     def test_version(self) -> None:
         completed = run_cli("--version")
 
         self.assertEqual(completed.returncode, 0)
-        self.assertEqual(completed.stdout.strip(), "samsarix-guard 0.2.0")
+        self.assertEqual(completed.stdout.strip(), "samsarix-guard 0.3.0")
 
 
 if __name__ == "__main__":

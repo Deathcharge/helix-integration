@@ -14,6 +14,9 @@ Current disposition: Merge the productization branch after exact-head verificati
 - Keep Samsarix LLC branding, package identity, license metadata, and compatibility aliases internally consistent.
 - Preserve the pre-productization default under a rollback ref before merging; do not delete legacy history.
 - Completed in this pass: sensitive-key values now count toward `max_nodes`; a regression test covers the bypass, and lint, types, and 25 tests pass.
+- Completed for 0.3: strict JSON policy files, three detector profiles, category
+  controls, organization-specific sensitive keys, and expanded provider-token
+  coverage without executable plugins or runtime dependencies.
 - Next: evaluate false positives and false negatives on consented representative corpora, then add bounded fuzz and performance suites.
 - Review priority: authorize license.
 - Review priority: confirm CI/wheel at merge SHA.

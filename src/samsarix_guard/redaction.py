@@ -104,6 +104,51 @@ _RULES: Final[tuple[_PatternRule, ...]] = (
         needles=("akia", "asia"),
     ),
     _PatternRule(
+        "ai_api_key",
+        re.compile(r"\bsk-(?:proj-|svcacct-|ant-api03-)[A-Za-z0-9_-]{20,255}\b"),
+        needles=("sk-proj-", "sk-svcacct-", "sk-ant-api03-"),
+    ),
+    _PatternRule(
+        "slack_token",
+        re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{20,255}\b"),
+        needles=("xox",),
+    ),
+    _PatternRule(
+        "stripe_key",
+        re.compile(r"\b(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{16,255}\b"),
+        needles=("sk_live_", "sk_test_", "rk_live_", "rk_test_"),
+    ),
+    _PatternRule(
+        "gitlab_token",
+        re.compile(r"\bglpat-[A-Za-z0-9_-]{20,255}\b"),
+        needles=("glpat-",),
+    ),
+    _PatternRule(
+        "google_api_key",
+        re.compile(r"\bAIza[0-9A-Za-z_-]{35}\b"),
+        needles=("aiza",),
+    ),
+    _PatternRule(
+        "npm_token",
+        re.compile(r"\bnpm_[A-Za-z0-9]{36}\b"),
+        needles=("npm_",),
+    ),
+    _PatternRule(
+        "pypi_token",
+        re.compile(r"\bpypi-AgEIcHlwaS5vcmc[A-Za-z0-9_-]{20,255}\b"),
+        needles=("pypi-",),
+    ),
+    _PatternRule(
+        "sendgrid_key",
+        re.compile(r"\bSG\.[A-Za-z0-9_-]{16,64}\.[A-Za-z0-9_-]{16,128}\b"),
+        needles=("sg.",),
+    ),
+    _PatternRule(
+        "huggingface_token",
+        re.compile(r"\bhf_[A-Za-z0-9]{20,255}\b"),
+        needles=("hf_",),
+    ),
+    _PatternRule(
         "private_key",
         re.compile(
             r"-----BEGIN[ \t]+(?P<kind>(?:RSA[ \t]+|EC[ \t]+|OPENSSH[ \t]+)?PRIVATE[ \t]+KEY)-----"
@@ -217,6 +262,9 @@ _SENSITIVE_KEY_SUFFIXES: Final[tuple[str, ...]] = (
     "_session_token",
     "_access_token",
 )
+SUPPORTED_CATEGORIES: Final[frozenset[str]] = frozenset(
+    {rule.category for rule in _RULES} | {"sensitive_key"}
+)
 
 
 def _passes_luhn(value: str) -> bool:
@@ -278,6 +326,7 @@ class Redactor:
         *,
         replacement_template: str = "[REDACTED:{category}]",
         extra_sensitive_keys: Sequence[str] = (),
+        disabled_categories: Sequence[str] = (),
         max_text_chars: int = 1_048_576,
         max_depth: int = 64,
         max_nodes: int = 100_000,
@@ -290,12 +339,17 @@ class Redactor:
             raise ValueError("max_nodes must be at least 1")
         if max_text_chars < 1:
             raise ValueError("max_text_chars must be at least 1")
+        disabled = frozenset(disabled_categories)
+        unknown_categories = disabled - SUPPORTED_CATEGORIES
+        if unknown_categories:
+            raise ValueError(f"unknown disabled categories: {sorted(unknown_categories)}")
         self.replacement_template = replacement_template
         replacement_prefix, replacement_suffix = replacement_template.split("{category}", maxsplit=1)
         self._replacement_pattern = re.compile(
             rf"{re.escape(replacement_prefix)}[a-z][a-z0-9_]*{re.escape(replacement_suffix)}"
         )
         self.extra_sensitive_keys = frozenset(_normalize_key(key) for key in extra_sensitive_keys)
+        self.disabled_categories = disabled
         self.max_text_chars = max_text_chars
         self.max_depth = max_depth
         self.max_nodes = max_nodes
@@ -310,6 +364,8 @@ class Redactor:
         folded = text.casefold()
         has_digit = re.search(r"[0-9]", text) is not None
         for rule in _RULES:
+            if rule.category in self.disabled_categories:
+                continue
             if rule.needles and not any(needle in folded for needle in rule.needles):
                 continue
             if rule.requires_digit and not has_digit:
@@ -371,7 +427,11 @@ class Redactor:
                 for key, child in value.items():
                     if not isinstance(key, str):
                         raise TypeError("structured data keys must be strings")
-                    if _is_sensitive_key(key, self.extra_sensitive_keys) and child is not None:
+                    if (
+                        "sensitive_key" not in self.disabled_categories
+                        and _is_sensitive_key(key, self.extra_sensitive_keys)
+                        and child is not None
+                    ):
                         # Sensitive values are deliberately not traversed, but they still
                         # consume work and must count toward the documented node bound.
                         count_node()

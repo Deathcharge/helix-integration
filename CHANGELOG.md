@@ -3,6 +3,17 @@
 All notable changes are documented here. The project uses semantic versioning for
 the supported package API.
 
+## 0.3.0 - 2026-08-08
+
+- Added strict, versioned JSON policies with built-in balanced, privacy-only, and
+  secrets-only profiles plus `policy init` and `policy validate` commands.
+- Added safe category disabling and reusable byte, depth, node, replacement, and
+  sensitive-key controls across the CLI and Python API.
+- Added deterministic token-family detection for major AI, developer, messaging,
+  payment, package-registry, and email providers.
+- Kept policies dependency-free and non-executable: unknown fields, duplicate
+  keys, invalid categories, invalid UTF-8, and oversized policy files fail closed.
+
 ## 0.2.0 - 2026-07-28
 
 - Reframed the repository as Samsarix Integration Guard, an offline redaction library

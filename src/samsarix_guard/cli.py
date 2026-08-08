@@ -13,7 +13,8 @@ from pathlib import Path
 from typing import Any, Final, TextIO
 
 from . import __version__
-from .redaction import RedactionLimitError, RedactionReport, Redactor
+from .policy import POLICY_VERSION, PROFILE_NAMES, Policy, PolicyError
+from .redaction import SUPPORTED_CATEGORIES, RedactionLimitError, RedactionReport, Redactor
 
 DEFAULT_MAX_BYTES: Final = 1024 * 1024
 EXIT_CLEAN: Final = 0
@@ -54,8 +55,18 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument(
             "--max-bytes",
             type=_positive_int,
-            default=DEFAULT_MAX_BYTES,
-            help=f"maximum UTF-8 input size (default: {DEFAULT_MAX_BYTES})",
+            default=None,
+            help=f"maximum UTF-8 input size (default policy: {DEFAULT_MAX_BYTES})",
+        )
+        command.add_argument("--max-depth", type=_positive_int, default=None, help="maximum structured nesting depth")
+        command.add_argument("--max-nodes", type=_positive_int, default=None, help="maximum structured values visited")
+        policy_group = command.add_mutually_exclusive_group()
+        policy_group.add_argument("--policy", metavar="FILE", help="strict JSON policy file")
+        policy_group.add_argument(
+            "--profile",
+            choices=PROFILE_NAMES,
+            default="balanced",
+            help="built-in detector profile (default: balanced)",
         )
         command.add_argument(
             "--sensitive-key",
@@ -63,6 +74,14 @@ def build_parser() -> argparse.ArgumentParser:
             default=[],
             metavar="KEY",
             help="additional JSON key to redact; repeatable",
+        )
+        command.add_argument(
+            "--disable-category",
+            action="append",
+            choices=sorted(SUPPORTED_CATEGORIES),
+            default=[],
+            metavar="CATEGORY",
+            help="disable a detector category; repeatable",
         )
 
     redact = subparsers.add_parser("redact", help="write a redacted copy of a payload")
@@ -72,6 +91,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     scan = subparsers.add_parser("scan", help="report findings without writing payload content")
     add_input_arguments(scan)
+
+    policy = subparsers.add_parser("policy", help="create or validate a strict JSON policy")
+    policy_commands = policy.add_subparsers(dest="policy_command", required=True)
+    policy_init = policy_commands.add_parser("init", help="write a documented policy template")
+    policy_init.add_argument("--profile", choices=PROFILE_NAMES, default="balanced")
+    policy_init.add_argument("-o", "--output", default="-", help="output file, or - for stdout (default: -)")
+    policy_validate = policy_commands.add_parser("validate", help="validate a policy without scanning payloads")
+    policy_validate.add_argument("input", help="policy file to validate")
     return parser
 
 
@@ -188,6 +215,36 @@ def _report_json(report: RedactionReport, format_name: str) -> str:
     )
 
 
+def _load_policy(args: argparse.Namespace) -> Policy:
+    try:
+        return Policy.load(args.policy) if args.policy else Policy.for_profile(args.profile)
+    except PolicyError as error:
+        raise CLIError(str(error)) from error
+
+
+def _run_policy(args: argparse.Namespace, *, stdout: TextIO) -> int:
+    if args.policy_command == "init":
+        policy = Policy.for_profile(args.profile)
+        output = json.dumps(policy.to_mapping(), indent=2, sort_keys=True) + "\n"
+        _write_output(output, args.output, None, stdout)
+        return EXIT_CLEAN
+    if args.policy_command == "validate":
+        try:
+            policy = Policy.load(args.input)
+        except PolicyError as error:
+            raise CLIError(str(error)) from error
+        stdout.write(
+            json.dumps(
+                {"profile": policy.profile, "valid": True, "version": POLICY_VERSION},
+                sort_keys=True,
+            )
+            + "\n"
+        )
+        stdout.flush()
+        return EXIT_CLEAN
+    raise CLIError(f"unsupported policy command: {args.policy_command}")
+
+
 def _write_output(text: str, output_name: str, input_path: Path | None, stdout: TextIO) -> None:
     if output_name == "-":
         try:
@@ -232,9 +289,20 @@ def _write_output(text: str, output_name: str, input_path: Path | None, stdout: 
 
 
 def run(args: argparse.Namespace, *, stdin: TextIO, stdout: TextIO, stderr: TextIO) -> int:
-    text, input_path = _read_input(args.input, args.max_bytes, stdin)
+    if args.command == "policy":
+        return _run_policy(args, stdout=stdout)
+
+    policy = _load_policy(args)
+    max_bytes = args.max_bytes if args.max_bytes is not None else policy.max_bytes
+    text, input_path = _read_input(args.input, max_bytes, stdin)
     format_name = _resolve_format(args.format, input_path, text)
-    redactor = Redactor(extra_sensitive_keys=args.sensitive_key, max_text_chars=args.max_bytes)
+    redactor = policy.create_redactor(
+        extra_sensitive_keys=tuple(args.sensitive_key),
+        disabled_categories=tuple(args.disable_category),
+        max_bytes=max_bytes,
+        max_depth=args.max_depth,
+        max_nodes=args.max_nodes,
+    )
     try:
         redacted, report = _process(text, format_name, redactor)
     except (RedactionLimitError, TypeError, ValueError) as error:
