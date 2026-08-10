@@ -35,8 +35,8 @@ class PolicyTests(unittest.TestCase):
         self.assertEqual(result.data["note"], "password=<SAFE:secret>")
 
     def test_privacy_profile_ignores_secret_detectors(self) -> None:
-        result = Policy.for_profile("privacy-only").create_redactor().redact_text(
-            "person@example.com password=hunter42"
+        result = (
+            Policy.for_profile("privacy-only").create_redactor().redact_text("person@example.com password=hunter42")
         )
 
         self.assertNotIn("person@example.com", result.text)

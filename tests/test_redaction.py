@@ -11,8 +11,7 @@ class TextRedactionTests(unittest.TestCase):
 
     def test_redacts_common_pii_and_secrets_without_retaining_values(self) -> None:
         original = (
-            "email=andrew@example.com password=hunter42 "
-            "Authorization: Bearer abcdefghijklmnop phone 212-555-0199"
+            "email=andrew@example.com password=hunter42 Authorization: Bearer abcdefghijklmnop phone 212-555-0199"
         )
 
         result = self.redactor.redact_text(original)
@@ -59,8 +58,7 @@ class TextRedactionTests(unittest.TestCase):
 
     def test_redacts_authentication_and_connection_assignments(self) -> None:
         original = (
-            "Authorization: Basic dXNlcjpwYXNz "
-            "DATABASE_URL=postgres://user:pass@example.test/db Cookie=session=abcdef"
+            "Authorization: Basic dXNlcjpwYXNz DATABASE_URL=postgres://user:pass@example.test/db Cookie=session=abcdef"
         )
 
         result = self.redactor.redact_text(original)
@@ -90,9 +88,7 @@ class TextRedactionTests(unittest.TestCase):
             self.assertNotIn(value, result.text)
 
     def test_disabled_categories_are_not_scanned(self) -> None:
-        result = Redactor(disabled_categories=["email"]).redact_text(
-            "person@example.com password=hunter42"
-        )
+        result = Redactor(disabled_categories=["email"]).redact_text("person@example.com password=hunter42")
 
         self.assertIn("person@example.com", result.text)
         self.assertEqual(result.report.counts, {"secret": 1})
@@ -143,9 +139,7 @@ class StructuredRedactionTests(unittest.TestCase):
         self.assertEqual(result.data["Customer Reference"], "[REDACTED:sensitive_key]")
 
     def test_disabling_sensitive_keys_still_scans_string_values(self) -> None:
-        result = Redactor(disabled_categories=["sensitive_key"]).redact_data(
-            {"password": "person@example.com"}
-        )
+        result = Redactor(disabled_categories=["sensitive_key"]).redact_data({"password": "person@example.com"})
 
         self.assertEqual(result.data["password"], "[REDACTED:email]")
         self.assertEqual(result.report.counts, {"email": 1})

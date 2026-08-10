@@ -1,11 +1,41 @@
 # Productization record
 
-Last updated: 2026-07-28
+Last updated: 2026-08-10
 
 This is the living decision, implementation, and release record for
 `Deathcharge/samsarix-integration-guard` (renamed from `helix-integration`).
 Command results are recorded only when actually
 run in this repository.
+
+## 0.3.0 competitive release candidate
+
+The 0.3 candidate extends the independently useful boundary without turning the
+project into a hosted service or repository-history scanner:
+
+- strict, non-executable JSON policies and balanced, secrets-only, and
+  privacy-only profiles;
+- deterministic provider-token coverage for AI, developer, payment, messaging,
+  package-registry, and email services;
+- bounded recursive scans with aggregate value-free JSON and SARIF 2.1.0;
+- a first-party composite GitHub Action;
+- a fail-closed Python `RedactingFormatter` that covers interpolated messages and
+  rendered exceptions; and
+- seeded redaction invariants, a bounded throughput smoke, practical boundary
+  recipes, and evidence-linked competitive positioning.
+
+Current Windows/Python 3.11 verification passed Ruff lint and format, strict mypy
+over seven package modules, Bandit, bytecode compilation, 51 unit/command/
+invariant tests, and `git diff --check`. The 128 KiB synthetic smoke observed
+0.644 MiB/s on this host; that threshold detects pathological regressions and is
+not a cross-platform performance guarantee.
+
+A fresh isolated build produced the 0.3.0 wheel and source distribution. The
+artifact verifier confirmed the package surface, MPL-2.0 metadata and notices,
+console entry point, absence of runtime dependencies, and exclusion of legacy
+code. A temporary Python 3.11 environment installed only the wheel and passed
+version, policy validation, redact-then-clean-scan, recursive SARIF, and logging
+API smoke journeys. Hosted CI and merge-head evidence belong in the pull request
+because they are established only after this record is committed and pushed.
 
 ## Repository assessment
 
@@ -185,12 +215,13 @@ coverage, and production readiness. Those claims were false at baseline.
   each with false-positive fixtures.
 - [ ] Add streaming JSONL processing with transactional output for payloads larger
   than the current in-memory limit.
-- [ ] Allow organization-owned, versioned policy files after defining a safe schema
-  and regular-expression denial rules.
+- [x] Add organization-owned, versioned policy files with a strict schema and no
+  executable plugins or regular-expression input.
 - [ ] Add stable salted pseudonymization only if a validated use case justifies the
   re-identification and key-management risk.
-- [ ] Add benchmark and fuzz/property suites for detector performance and parser
-  boundaries.
+- [x] Add seeded invariants and a bounded synthetic throughput smoke.
+- [ ] Add formal fuzz/property suites and representative consented corpora for
+  detector and parser boundaries.
 - [ ] Publish signed artifacts and provenance attestations after owner approval.
 
 ## Implementation checklist
@@ -282,7 +313,7 @@ support for organization-specific detector policy and review. A subscription Saa
 is deliberately out of scope because it would add a sensitive-data processor,
 security obligations, and recurring cost without evidence of demand.
 
-## Final verification and disposition
+## 0.2.0 final verification and disposition
 
 Final local verification used Windows, PowerShell, and Python 3.11.9. Commands were
 run after the hardening pass unless explicitly described as a probe.

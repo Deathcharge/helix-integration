@@ -214,7 +214,16 @@ _RULES: Final[tuple[_PatternRule, ...]] = (
     ),
     _PatternRule(
         "credit_card",
-        re.compile(r"(?<!\d)(?:\d[ -]?){13,19}(?!\d)"),
+        re.compile(r"(?<!\d)\d{13,19}(?!\d)"),
+        validator=lambda value: _passes_luhn(value),
+        requires_digit=True,
+    ),
+    _PatternRule(
+        "credit_card",
+        re.compile(
+            r"(?<!\d)(?:(?:\d{4}[ -]){4}\d{1,3}|(?:\d{4}[ -]){3}\d{1,4}|"
+            r"\d{4}[ -]\d{6}[ -]\d{5})(?!\d)"
+        ),
         validator=lambda value: _passes_luhn(value),
         requires_digit=True,
     ),
@@ -262,9 +271,7 @@ _SENSITIVE_KEY_SUFFIXES: Final[tuple[str, ...]] = (
     "_session_token",
     "_access_token",
 )
-SUPPORTED_CATEGORIES: Final[frozenset[str]] = frozenset(
-    {rule.category for rule in _RULES} | {"sensitive_key"}
-)
+SUPPORTED_CATEGORIES: Final[frozenset[str]] = frozenset({rule.category for rule in _RULES} | {"sensitive_key"})
 
 
 def _passes_luhn(value: str) -> bool:
@@ -294,11 +301,7 @@ def _normalize_key(key: str) -> str:
 
 def _is_sensitive_key(key: str, extra_keys: frozenset[str]) -> bool:
     normalized = _normalize_key(key)
-    return (
-        normalized in _SENSITIVE_KEYS
-        or normalized in extra_keys
-        or normalized.endswith(_SENSITIVE_KEY_SUFFIXES)
-    )
+    return normalized in _SENSITIVE_KEYS or normalized in extra_keys or normalized.endswith(_SENSITIVE_KEY_SUFFIXES)
 
 
 def _merge_overlaps(findings: list[Finding]) -> tuple[Finding, ...]:

@@ -24,9 +24,7 @@ class ReportingTests(unittest.TestCase):
         self.assertEqual([result["path"] for result in report["results"]], [record.path for record in records])
 
     def test_sarif_is_21_with_stable_rules_and_no_payload_values(self) -> None:
-        records = (
-            ScanRecord("logs/app.log", "text", RedactionReport({"email": 1, "secret": 2})),
-        )
+        records = (ScanRecord("logs/app.log", "text", RedactionReport({"email": 1, "secret": 2})),)
 
         report = sarif_scan_report(records, semantic_version="0.3.0")
         encoded = json.dumps(report)

@@ -115,6 +115,27 @@ print(result.report.counts)
 The input object is not mutated. Reports and `Finding` objects do not retain the
 matched secret or PII value.
 
+### Protect Python logging handlers
+
+Wrap an existing formatter to redact its fully rendered message, arguments, and
+exception text immediately before a handler emits it:
+
+```python
+import logging
+
+from samsarix_guard import RedactingFormatter
+
+handler = logging.StreamHandler()
+handler.setFormatter(
+    RedactingFormatter(logging.Formatter("%(levelname)s %(name)s %(message)s"))
+)
+```
+
+Size-limit errors replace the entire record by default. See
+[`docs/LOGGING.md`](docs/LOGGING.md) for failure behavior and trust boundaries,
+and [`docs/USE_CASES.md`](docs/USE_CASES.md) for AI, webhook, support-export,
+logging, and CI examples.
+
 ## What it detects
 
 The default detector covers:
@@ -172,12 +193,14 @@ record.
 
 ## Architecture and trust boundaries
 
-The installed package contains two layers:
+The installed package contains four small layers:
 
 1. `redaction.py` performs bounded pattern matching and recursive structured-data
    redaction.
-2. `cli.py` handles local UTF-8 input, format parsing, count-only reports, and
-   atomic output.
+2. `policy.py` validates reusable, non-executable detector policies.
+3. `reporting.py` builds aggregate value-free JSON and SARIF.
+4. `logging.py` and `cli.py` adapt the core to Python handlers and local UTF-8
+   input, format parsing, count-only reports, and atomic output.
 
 Raw input exists in process memory while it is inspected. The tool does not open
 network connections, persist state, load plugins, execute input, or log payloads.
@@ -208,7 +231,9 @@ integration suite.
 For broader NLP and structured-data de-identification, evaluate specialized tools
 such as [Microsoft Presidio](https://microsoft.github.io/presidio/). Its own
 documentation likewise warns that automated detection does not guarantee finding
-all sensitive information.
+all sensitive information. See [`docs/COMPETITIVE_LANDSCAPE.md`](docs/COMPETITIVE_LANDSCAPE.md)
+for an evidence-linked comparison with repository scanners, managed products, and
+de-identification systems.
 
 ## Security, support, and licensing
 

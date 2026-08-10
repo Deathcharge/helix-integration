@@ -1,5 +1,6 @@
-"""Offline redaction for integration payloads."""
+"""Offline redaction for integration payloads and application logs."""
 
+from .logging import RedactingFormatter
 from .policy import POLICY_VERSION, PROFILE_NAMES, Policy, PolicyError
 from .redaction import (
     SUPPORTED_CATEGORIES,
@@ -19,6 +20,7 @@ __all__ = [
     "Finding",
     "Policy",
     "PolicyError",
+    "RedactingFormatter",
     "RedactionLimitError",
     "RedactionReport",
     "Redactor",

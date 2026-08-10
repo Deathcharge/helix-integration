@@ -17,6 +17,13 @@ the supported package API.
   exclusion, aggregate value-free reports, and input/report overwrite protection.
 - Added SARIF 2.1.0 output with stable non-secret fingerprints and a first-party
   composite GitHub Action that can upload results before enforcing the scan gate.
+- Added a fail-closed `RedactingFormatter` for completely rendered Python log
+  messages, arguments, fields, and exception text.
+- Added deterministic adversarial invariants, a bounded synthetic performance
+  smoke test, practical integration recipes, and an evidence-linked competitive
+  landscape.
+- Added formatter and Bandit gates to CI plus weekly Python and GitHub Actions
+  dependency update checks.
 
 ## 0.2.0 - 2026-07-28
 
