@@ -270,7 +270,12 @@ def _display_path(path: Path) -> str:
     try:
         return path.relative_to(Path.cwd()).as_posix()
     except ValueError:
-        return Path(os.path.relpath(path, Path.cwd())).as_posix()
+        try:
+            return Path(os.path.relpath(path, Path.cwd())).as_posix()
+        except ValueError:
+            # Windows cannot construct a relative path across drive letters.
+            # Keep reports portable and avoid disclosing an absolute host path.
+            return path.name
 
 
 def _validate_scan_globs(patterns: tuple[str, ...]) -> tuple[str, ...]:

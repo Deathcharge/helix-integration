@@ -7,6 +7,9 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
+
+from samsarix_guard.cli import _display_path
 
 REPOSITORY = Path(__file__).resolve().parents[1]
 SOURCE = REPOSITORY / "src"
@@ -73,6 +76,7 @@ class CLITests(unittest.TestCase):
             completed = run_cli("scan", str(root), "--recursive")
 
         self.assertEqual(completed.returncode, 1, completed.stderr)
+        self.assertTrue(completed.stdout, completed.stderr)
         report = json.loads(completed.stdout)
         self.assertEqual(report["counts"], {"email": 1, "sensitive_key": 1})
         self.assertEqual(report["detections"], 2)
@@ -88,6 +92,7 @@ class CLITests(unittest.TestCase):
             completed = run_cli("scan", str(source), "--report-format", "sarif")
 
         self.assertEqual(completed.returncode, 1, completed.stderr)
+        self.assertTrue(completed.stdout, completed.stderr)
         report = json.loads(completed.stdout)
         self.assertEqual(report["version"], "2.1.0")
         results = report["runs"][0]["results"]
@@ -120,6 +125,14 @@ class CLITests(unittest.TestCase):
             self.assertEqual(source.read_text(encoding="utf-8"), "person@example.com")
         self.assertEqual(completed.returncode, 2)
         self.assertIn("refusing to overwrite", completed.stderr)
+
+    def test_cross_drive_report_path_falls_back_without_disclosing_host_path(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            source = (Path(directory) / "payload.log").resolve()
+            with patch("samsarix_guard.cli.os.path.relpath", side_effect=ValueError("different drive")):
+                displayed = _display_path(source)
+
+        self.assertEqual(displayed, "payload.log")
 
     def test_redact_jsonl_and_preserve_blank_records(self) -> None:
         payload = '{"token":"abc"}\n\n{"note":"person@example.com"}\n'

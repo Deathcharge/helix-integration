@@ -24,6 +24,8 @@ the supported package API.
   landscape.
 - Added formatter and Bandit gates to CI plus weekly Python and GitHub Actions
   dependency update checks.
+- Fixed batch and SARIF report paths for Windows inputs located on a different
+  drive from the working directory without exposing absolute host paths.
 
 ## 0.2.0 - 2026-07-28
 
