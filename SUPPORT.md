@@ -1,7 +1,6 @@
 # Support
 
-Samsarix Integration Guard is currently a release candidate without a bundled
-support SLA.
+Samsarix Integration Guard is beta software without a bundled support SLA.
 
 - General, partnership, and licensing inquiries: contact@samsarix.com
 - Product support: support@samsarix.com

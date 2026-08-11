@@ -6,9 +6,9 @@ This roadmap separates four gates: merge, release, publication, and flagship ado
 
 Portfolio role: **reusable library or sdk**. Keep this as a small, independently versioned package. Samsarix Unified should consume it only through a public API adapter; private monorepo imports and copied implementations are out of scope.
 
-Current disposition: 0.3.0 is a release candidate on the competitive-guard branch.
-Merge follows exact-head local and hosted verification; public package publication
-and flagship adoption remain separate owner decisions.
+Current disposition: 0.3.0 is merged on `main` with exact-head hosted verification.
+Public package publication is gated by the dedicated trusted-publishing workflow;
+flagship adoption remains a separate product decision.
 
 ## Stabilize the productized default
 
@@ -25,7 +25,8 @@ and flagship adoption remain separate owner decisions.
 - Completed for 0.3: fail-closed Python logging integration, seeded invariant
   checks, a bounded performance smoke test, and practical boundary recipes.
 - Next: evaluate false positives and false negatives on consented representative corpora, then add bounded fuzz and performance suites.
-- Review priority: confirm CI/wheel at merge SHA.
+- Completed for 0.3: merge-head CI and wheel verification passed on Linux and
+  Windows across Python 3.10 through 3.13.
 - Review priority: run representative corpus, fuzz, and performance evaluations.
 
 ## Release candidate
@@ -43,7 +44,8 @@ Current hardening backlog:
   streaming path for larger JSONL inputs; current seeded invariants and synthetic
   throughput smoke are regression evidence, not a performance guarantee.
 - The legacy source remains visible and can confuse contributors, scanners, or users despite its exclusion from builds.
-- No published package, signed release, usage evidence, or real downstream integration exists.
+- Trusted Publishing and PyPI attestations are automated; signed GitHub releases,
+  usage evidence, and a real downstream integration remain follow-up evidence.
 
 ## Samsarix adoption
 
