@@ -7,6 +7,9 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
+
+from samsarix_guard.cli import _display_path
 
 REPOSITORY = Path(__file__).resolve().parents[1]
 SOURCE = REPOSITORY / "src"
@@ -57,6 +60,79 @@ class CLITests(unittest.TestCase):
 
         self.assertEqual(completed.returncode, 0)
         self.assertFalse(json.loads(completed.stdout)["changed"])
+
+    def test_recursive_scan_aggregates_common_payload_files(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            nested = root / "nested"
+            nested.mkdir()
+            (root / "app.log").write_text("contact person@example.com", encoding="utf-8")
+            (nested / "event.json").write_text('{"token":"abc"}', encoding="utf-8")
+            (nested / "ignored.bin").write_bytes(b"person@example.com")
+            hidden = root / ".hidden"
+            hidden.mkdir()
+            (hidden / "ignored.log").write_text("person@example.com", encoding="utf-8")
+
+            completed = run_cli("scan", str(root), "--recursive")
+
+        self.assertEqual(completed.returncode, 1, completed.stderr)
+        self.assertTrue(completed.stdout, completed.stderr)
+        report = json.loads(completed.stdout)
+        self.assertEqual(report["counts"], {"email": 1, "sensitive_key": 1})
+        self.assertEqual(report["detections"], 2)
+        self.assertEqual(report["files_scanned"], 2)
+        self.assertEqual(report["files_with_findings"], 2)
+        self.assertEqual(len(report["results"]), 2)
+
+    def test_sarif_scan_is_value_free_and_points_to_input(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "payload.log"
+            source.write_text("person@example.com password=hunter42", encoding="utf-8")
+
+            completed = run_cli("scan", str(source), "--report-format", "sarif")
+
+        self.assertEqual(completed.returncode, 1, completed.stderr)
+        self.assertTrue(completed.stdout, completed.stderr)
+        report = json.loads(completed.stdout)
+        self.assertEqual(report["version"], "2.1.0")
+        results = report["runs"][0]["results"]
+        self.assertEqual({result["ruleId"] for result in results}, {"email", "secret"})
+        self.assertTrue(all(result["locations"] for result in results))
+        self.assertNotIn("person@example.com", completed.stdout)
+        self.assertNotIn("hunter42", completed.stdout)
+
+    def test_directory_scan_requires_recursive_and_enforces_file_cap(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "one.log").write_text("clean", encoding="utf-8")
+            (root / "two.log").write_text("clean", encoding="utf-8")
+
+            not_recursive = run_cli("scan", str(root))
+            capped = run_cli("scan", str(root), "--recursive", "--max-files", "1")
+
+        self.assertEqual(not_recursive.returncode, 2)
+        self.assertIn("requires --recursive", not_recursive.stderr)
+        self.assertEqual(capped.returncode, 2)
+        self.assertIn("exceeds --max-files=1", capped.stderr)
+
+    def test_scan_report_refuses_to_overwrite_payload(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "payload.log"
+            source.write_text("person@example.com", encoding="utf-8")
+
+            completed = run_cli("scan", str(source), "--report-output", str(source))
+
+            self.assertEqual(source.read_text(encoding="utf-8"), "person@example.com")
+        self.assertEqual(completed.returncode, 2)
+        self.assertIn("refusing to overwrite", completed.stderr)
+
+    def test_cross_drive_report_path_falls_back_without_disclosing_host_path(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            source = (Path(directory) / "payload.log").resolve()
+            with patch("samsarix_guard.cli.os.path.relpath", side_effect=ValueError("different drive")):
+                displayed = _display_path(source)
+
+        self.assertEqual(displayed, "payload.log")
 
     def test_redact_jsonl_and_preserve_blank_records(self) -> None:
         payload = '{"token":"abc"}\n\n{"note":"person@example.com"}\n'
@@ -116,11 +192,64 @@ class CLITests(unittest.TestCase):
         self.assertEqual(completed.returncode, 2)
         self.assertIn("exceeds --max-bytes=4", completed.stderr)
 
+    def test_policy_file_controls_profile_keys_and_replacement(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            policy = Path(directory) / "policy.json"
+            policy.write_text(
+                json.dumps(
+                    {
+                        "version": 1,
+                        "profile": "secrets-only",
+                        "sensitive_keys": ["customer_reference"],
+                        "replacement": "<REMOVED:{category}>",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            completed = run_cli(
+                "redact",
+                "--format",
+                "json",
+                "--policy",
+                str(policy),
+                input_text='{"email":"person@example.com","customer_reference":"C-123"}',
+            )
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        output = json.loads(completed.stdout)
+        self.assertEqual(output["email"], "person@example.com")
+        self.assertEqual(output["customer_reference"], "<REMOVED:sensitive_key>")
+
+    def test_policy_init_and_validate(self) -> None:
+        initialized = run_cli("policy", "init", "--profile", "privacy-only")
+        self.assertEqual(initialized.returncode, 0, initialized.stderr)
+        template = json.loads(initialized.stdout)
+        self.assertEqual(template["version"], 1)
+        self.assertEqual(template["profile"], "privacy-only")
+
+        with tempfile.TemporaryDirectory() as directory:
+            policy = Path(directory) / "policy.json"
+            policy.write_text(initialized.stdout, encoding="utf-8")
+            validated = run_cli("policy", "validate", str(policy))
+
+        self.assertEqual(validated.returncode, 0, validated.stderr)
+        self.assertEqual(json.loads(validated.stdout), {"profile": "privacy-only", "valid": True, "version": 1})
+
+    def test_invalid_policy_fails_without_reading_payload(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            policy = Path(directory) / "policy.json"
+            policy.write_text('{"version":2}', encoding="utf-8")
+            completed = run_cli("scan", "--policy", str(policy), input_text="person@example.com")
+
+        self.assertEqual(completed.returncode, 2)
+        self.assertEqual(completed.stdout, "")
+        self.assertIn("policy version", completed.stderr)
+
     def test_version(self) -> None:
         completed = run_cli("--version")
 
         self.assertEqual(completed.returncode, 0)
-        self.assertEqual(completed.stdout.strip(), "samsarix-guard 0.2.0")
+        self.assertEqual(completed.stdout.strip(), "samsarix-guard 0.3.0")
 
 
 if __name__ == "__main__":

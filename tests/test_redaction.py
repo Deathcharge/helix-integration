@@ -11,8 +11,7 @@ class TextRedactionTests(unittest.TestCase):
 
     def test_redacts_common_pii_and_secrets_without_retaining_values(self) -> None:
         original = (
-            "email=andrew@example.com password=hunter42 "
-            "Authorization: Bearer abcdefghijklmnop phone 212-555-0199"
+            "email=andrew@example.com password=hunter42 Authorization: Bearer abcdefghijklmnop phone 212-555-0199"
         )
 
         result = self.redactor.redact_text(original)
@@ -59,8 +58,7 @@ class TextRedactionTests(unittest.TestCase):
 
     def test_redacts_authentication_and_connection_assignments(self) -> None:
         original = (
-            "Authorization: Basic dXNlcjpwYXNz "
-            "DATABASE_URL=postgres://user:pass@example.test/db Cookie=session=abcdef"
+            "Authorization: Basic dXNlcjpwYXNz DATABASE_URL=postgres://user:pass@example.test/db Cookie=session=abcdef"
         )
 
         result = self.redactor.redact_text(original)
@@ -69,6 +67,35 @@ class TextRedactionTests(unittest.TestCase):
         self.assertNotIn("postgres://user:pass@example.test/db", result.text)
         self.assertNotIn("session=abcdef", result.text)
         self.assertEqual(result.report.detection_count, 3)
+
+    def test_redacts_current_provider_token_families(self) -> None:
+        values = {
+            "ai_api_key": "sk-proj-" + "A" * 32,
+            "slack_token": "xoxb-123456789012-123456789012-" + "a" * 24,
+            "stripe_key": "sk_live_" + "B" * 24,
+            "gitlab_token": "glpat-" + "C" * 24,
+            "google_api_key": "AIza" + "D" * 35,
+            "npm_token": "npm_" + "E" * 36,
+            "pypi_token": "pypi-AgEIcHlwaS5vcmc" + "F" * 24,
+            "sendgrid_key": "SG." + "G" * 22 + "." + "H" * 43,
+            "huggingface_token": "hf_" + "J" * 24,
+        }
+
+        result = self.redactor.redact_text("\n".join(values.values()))
+
+        self.assertEqual(result.report.counts, {category: 1 for category in sorted(values)})
+        for value in values.values():
+            self.assertNotIn(value, result.text)
+
+    def test_disabled_categories_are_not_scanned(self) -> None:
+        result = Redactor(disabled_categories=["email"]).redact_text("person@example.com password=hunter42")
+
+        self.assertIn("person@example.com", result.text)
+        self.assertEqual(result.report.counts, {"secret": 1})
+
+    def test_unknown_disabled_category_is_rejected(self) -> None:
+        with self.assertRaisesRegex(ValueError, "unknown disabled"):
+            Redactor(disabled_categories=["imaginary"])
 
     def test_private_key_block_is_removed_as_one_finding(self) -> None:
         private_key = "-----BEGIN PRIVATE KEY-----\nvery-sensitive-material\n-----END PRIVATE KEY-----"
@@ -110,6 +137,12 @@ class StructuredRedactionTests(unittest.TestCase):
         )
 
         self.assertEqual(result.data["Customer Reference"], "[REDACTED:sensitive_key]")
+
+    def test_disabling_sensitive_keys_still_scans_string_values(self) -> None:
+        result = Redactor(disabled_categories=["sensitive_key"]).redact_data({"password": "person@example.com"})
+
+        self.assertEqual(result.data["password"], "[REDACTED:email]")
+        self.assertEqual(result.report.counts, {"email": 1})
 
     def test_redaction_is_idempotent_and_scans_clean(self) -> None:
         redactor = Redactor()

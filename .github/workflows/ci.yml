@@ -31,8 +31,11 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e ".[dev]"
       - run: python -m ruff check src tests scripts
+      - run: python -m ruff format --check src tests scripts
       - run: python -m mypy src
+      - run: python -m bandit -q -r src
       - run: python -m unittest discover -s tests -v
+      - run: python scripts/benchmark.py --size-kib 64 --iterations 2 --minimum-mib-per-second 0.05
 
   package:
     runs-on: ubuntu-latest
@@ -51,3 +54,15 @@ jobs:
       - run: samsarix-guard --version
       - run: samsarix-guard redact examples/sample-event.json --output sanitized.json
       - run: samsarix-guard scan sanitized.json
+      - name: Exercise local composite action
+        id: action-smoke
+        continue-on-error: true
+        uses: ./
+        with:
+          path: examples/sample-event.json
+          report: action-smoke.sarif
+      - name: Verify action finding gate and SARIF artifact
+        run: |
+          test "${{ steps.action-smoke.outcome }}" = "failure"
+          test -s action-smoke.sarif
+          python -c "import json; report=json.load(open('action-smoke.sarif', encoding='utf-8')); assert report['version'] == '2.1.0'; assert report['runs'][0]['results']"

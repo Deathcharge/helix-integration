@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "profile": "balanced",
+  "sensitive_keys": [
+    "customer_reference",
+    "support_case_id"
+  ],
+  "disabled_categories": [],
+  "replacement": "[REDACTED:{category}]",
+  "limits": {
+    "max_bytes": 1048576,
+    "max_depth": 64,
+    "max_nodes": 100000
+  }
+}

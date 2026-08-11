@@ -9,7 +9,7 @@ It is for developers and operators who need a small, auditable safety layer in a
 integration pipeline. It has no runtime dependencies, makes no network requests,
 and reports categories and counts without echoing detected values.
 
-> **Maturity:** 0.2.0 release candidate. The supported redaction path is tested;
+> **Maturity:** 0.3.0 release candidate. The supported redaction path is tested;
 > automated pattern matching is not a compliance guarantee and cannot identify
 > every form of sensitive data.
 
@@ -46,6 +46,18 @@ input or processing error.
 samsarix-guard scan examples/sample-event.json
 ```
 
+Scan a bounded directory tree or emit SARIF 2.1.0 for GitHub code scanning:
+
+```console
+samsarix-guard scan ./outbound-events --recursive --include "*.jsonl"
+samsarix-guard scan ./outbound-events --recursive \
+  --report-format sarif --report-output samsarix-guard.sarif
+```
+
+Batch reports contain only paths, formats, categories, and counts. Hidden paths
+and symlinks are skipped, and file-count plus total-byte limits bound the job. See
+[`docs/CI.md`](docs/CI.md) for the first-party GitHub Action and SARIF workflow.
+
 Example report:
 
 ```json
@@ -62,6 +74,25 @@ samsarix-guard redact --format jsonl < events.jsonl > safe-events.jsonl
 Run `samsarix-guard --help` and `samsarix-guard redact --help` for all
 options. Inputs default to a 1 MiB limit; change it with `--max-bytes` only when the
 pipeline has an appropriate CPU and memory budget.
+
+## Repeatable policy profiles
+
+Use a built-in profile for a fast boundary or generate a strict JSON policy that
+can be reviewed and reused across environments:
+
+```console
+samsarix-guard scan payload.json --profile secrets-only
+samsarix-guard policy init --output samsarix-policy.json
+samsarix-guard policy validate samsarix-policy.json
+samsarix-guard redact payload.json --policy samsarix-policy.json
+```
+
+`balanced` detects PII and secrets, `secrets-only` permits ordinary contact data,
+and `privacy-only` ignores credential detectors. Policies can add structured-data
+keys, disable individual categories, choose a replacement label, and set byte,
+depth, and node limits. The schema rejects unknown fields and cannot load plugins
+or custom code. See [`docs/POLICIES.md`](docs/POLICIES.md) and the ready-to-edit
+[`examples/policy.json`](examples/policy.json).
 
 ## Python API
 
@@ -84,6 +115,27 @@ print(result.report.counts)
 The input object is not mutated. Reports and `Finding` objects do not retain the
 matched secret or PII value.
 
+### Protect Python logging handlers
+
+Wrap an existing formatter to redact its fully rendered message, arguments, and
+exception text immediately before a handler emits it:
+
+```python
+import logging
+
+from samsarix_guard import RedactingFormatter
+
+handler = logging.StreamHandler()
+handler.setFormatter(
+    RedactingFormatter(logging.Formatter("%(levelname)s %(name)s %(message)s"))
+)
+```
+
+Size-limit errors replace the entire record by default. See
+[`docs/LOGGING.md`](docs/LOGGING.md) for failure behavior and trust boundaries,
+and [`docs/USE_CASES.md`](docs/USE_CASES.md) for AI, webhook, support-export,
+logging, and CI examples.
+
 ## What it detects
 
 The default detector covers:
@@ -93,14 +145,18 @@ The default detector covers:
 - bearer and basic authentication values, JWTs, GitHub tokens, AWS access-key IDs,
   common secret/connection assignments, secret URL query values, and PEM private-
   key blocks up to 16 KiB;
+- structured token families used by OpenAI/Anthropic, Slack, Stripe, GitLab,
+  Google APIs, npm, PyPI, SendGrid, and Hugging Face;
 - email addresses, conservatively formatted phone numbers and US Social Security
   numbers, Luhn-valid payment-card numbers, and valid IPv4 addresses.
 
-JSON keys can be extended with repeated `--sensitive-key KEY` options or the
-`extra_sensitive_keys` API argument. Detection is deliberately deterministic and
-explainable. It does not guess names, street addresses, health information, free-
-form credentials, or domain-specific identifiers. Review output and add upstream
-data minimization or a specialized detector when those categories matter.
+JSON keys can be extended with policy files, repeated `--sensitive-key KEY`
+options, or the `extra_sensitive_keys` API argument. Categories can be disabled
+through a policy, profile, `--disable-category`, or the Python API. Detection is
+deliberately deterministic and explainable. It does not guess names, street
+addresses, health information, free-form credentials, or domain-specific
+identifiers. Review output and add upstream data minimization or a specialized
+detector when those categories matter.
 
 ## Formats and failure behavior
 
@@ -137,12 +193,14 @@ record.
 
 ## Architecture and trust boundaries
 
-The installed package contains two layers:
+The installed package contains four small layers:
 
 1. `redaction.py` performs bounded pattern matching and recursive structured-data
    redaction.
-2. `cli.py` handles local UTF-8 input, format parsing, count-only reports, and
-   atomic output.
+2. `policy.py` validates reusable, non-executable detector policies.
+3. `reporting.py` builds aggregate value-free JSON and SARIF.
+4. `logging.py` and `cli.py` adapt the core to Python handlers and local UTF-8
+   input, format parsing, count-only reports, and atomic output.
 
 Raw input exists in process memory while it is inspected. The tool does not open
 network connections, persist state, load plugins, execute input, or log payloads.
@@ -173,7 +231,9 @@ integration suite.
 For broader NLP and structured-data de-identification, evaluate specialized tools
 such as [Microsoft Presidio](https://microsoft.github.io/presidio/). Its own
 documentation likewise warns that automated detection does not guarantee finding
-all sensitive information.
+all sensitive information. See [`docs/COMPETITIVE_LANDSCAPE.md`](docs/COMPETITIVE_LANDSCAPE.md)
+for an evidence-linked comparison with repository scanners, managed products, and
+de-identification systems.
 
 ## Security, support, and licensing
 

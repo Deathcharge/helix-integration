@@ -12,7 +12,10 @@ REQUIRED_MODULES = {
     "samsarix_guard/__init__.py",
     "samsarix_guard/__main__.py",
     "samsarix_guard/cli.py",
+    "samsarix_guard/logging.py",
+    "samsarix_guard/policy.py",
     "samsarix_guard/redaction.py",
+    "samsarix_guard/reporting.py",
 }
 REQUIRED_SDIST_FILES = {
     "CHANGELOG.md",
@@ -24,6 +27,7 @@ REQUIRED_SDIST_FILES = {
     "SECURITY.md",
     "SUPPORT.md",
     "TRADEMARKS.md",
+    "action.yml",
 }
 
 
@@ -39,11 +43,7 @@ def verify_wheel(path: Path) -> None:
             fail(f"wheel is missing {sorted(missing)}")
         if any("legacy" in name.casefold() or "saas_router" in name.casefold() for name in names):
             fail("wheel contains the legacy Helix Unified snapshot")
-        unexpected_code = {
-            name
-            for name in names
-            if name.endswith(".py") and not name.startswith("samsarix_guard/")
-        }
+        unexpected_code = {name for name in names if name.endswith(".py") and not name.startswith("samsarix_guard/")}
         if unexpected_code:
             fail(f"wheel contains unexpected Python modules: {sorted(unexpected_code)}")
 
