@@ -20,10 +20,13 @@ and reports categories and counts without echoing detected values.
 
 ## Quick start
 
-Prerequisites: Python 3.10 or newer.
+Prerequisites: Python 3.10 or newer; CI currently verifies Python 3.10 through
+3.13.
+
+For the published 0.3.0 release:
 
 ```console
-python -m pip install samsarix-integration-guard
+python -m pip install samsarix-integration-guard==0.3.0
 samsarix-guard redact examples/sample-event.json
 ```
 

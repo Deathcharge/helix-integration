@@ -5,6 +5,8 @@ import sys
 import unittest
 from pathlib import Path
 
+from scripts.verify_release import package_version
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -27,6 +29,11 @@ class ReleaseVerificationTests(unittest.TestCase):
         completed = self.run_verifier("v9.9.9")
         self.assertEqual(completed.returncode, 1)
         self.assertIn("does not match project version", completed.stderr)
+
+    def test_package_version_ignores_comments_and_rejects_duplicates(self) -> None:
+        self.assertEqual(package_version('# __version__ = "9.9.9"\n__version__ = "0.3.0"\n'), "0.3.0")
+        with self.assertRaisesRegex(SystemExit, "exactly one literal"):
+            package_version('__version__ = "0.3.0"\n__version__ = "9.9.9"\n')
 
 
 if __name__ == "__main__":

@@ -30,13 +30,16 @@ and environment.
    clean build and `python scripts/verify_distribution.py dist`.
 3. Run `python scripts/verify_release.py vMAJOR.MINOR.PATCH` and merge the exact
    reviewed commit to `main` only after hosted CI passes.
-4. Create a non-prerelease GitHub release for `vMAJOR.MINOR.PATCH` targeting that
-   exact `main` commit. Do not attach locally built distributions.
-5. Publish the GitHub release and approve the `pypi` environment deployment. The
-   release workflow builds and verifies a wheel and source distribution in a job
-   without publishing credentials, publishes those files to PyPI, generates PyPI
-   attestations, and attaches the same files plus `SHA256SUMS` to GitHub.
-6. Verify the workflow, PyPI file hashes and attestations, GitHub asset digests,
+4. Create a draft, non-prerelease GitHub release for `vMAJOR.MINOR.PATCH`
+   targeting that exact `main` commit. Do not attach locally built distributions
+   or publish the draft.
+5. Create and push the matching tag from that exact `main` commit. The release
+   workflow rejects a tag that does not resolve to the current `origin/main`.
+6. Approve the `pypi` environment deployment. The workflow builds and verifies a
+   wheel and source distribution in a job without publishing credentials,
+   publishes those files to PyPI, generates PyPI attestations, attaches the same
+   files plus `SHA256SUMS` to the draft, and publishes the GitHub release last.
+7. Verify the workflow, PyPI file hashes and attestations, GitHub asset digests,
    and installation in a fresh environment with
    `python -m pip install --no-deps samsarix-integration-guard==VERSION`.
 

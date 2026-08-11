@@ -24,7 +24,7 @@ project into a hosted service or repository-history scanner:
   recipes, and evidence-linked competitive positioning.
 
 Current Windows/Python 3.11 verification passed Ruff lint and format, strict mypy
-over seven package modules, Bandit, bytecode compilation, 54 unit/command/
+over seven package modules, Bandit, bytecode compilation, 55 unit/command/
 invariant tests, and `git diff --check`. The 128 KiB synthetic smoke observed
 0.644 MiB/s on this host; that threshold detects pathological regressions and is
 not a cross-platform performance guarantee.
