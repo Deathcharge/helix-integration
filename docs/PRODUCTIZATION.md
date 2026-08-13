@@ -1,13 +1,13 @@
 # Productization record
 
-Last updated: 2026-08-10
+Last updated: 2026-08-11
 
 This is the living decision, implementation, and release record for
 `Deathcharge/samsarix-integration-guard` (renamed from `helix-integration`).
 Command results are recorded only when actually
 run in this repository.
 
-## 0.3.0 competitive release candidate
+## 0.3.0 competitive release
 
 The 0.3 candidate extends the independently useful boundary without turning the
 project into a hosted service or repository-history scanner:
@@ -24,7 +24,7 @@ project into a hosted service or repository-history scanner:
   recipes, and evidence-linked competitive positioning.
 
 Current Windows/Python 3.11 verification passed Ruff lint and format, strict mypy
-over seven package modules, Bandit, bytecode compilation, 51 unit/command/
+over seven package modules, Bandit, bytecode compilation, 55 unit/command/
 invariant tests, and `git diff --check`. The 128 KiB synthetic smoke observed
 0.644 MiB/s on this host; that threshold detects pathological regressions and is
 not a cross-platform performance guarantee.
@@ -34,8 +34,9 @@ artifact verifier confirmed the package surface, MPL-2.0 metadata and notices,
 console entry point, absence of runtime dependencies, and exclusion of legacy
 code. A temporary Python 3.11 environment installed only the wheel and passed
 version, policy validation, redact-then-clean-scan, recursive SARIF, and logging
-API smoke journeys. Hosted CI and merge-head evidence belong in the pull request
-because they are established only after this record is committed and pushed.
+API smoke journeys. The merge commit `91de804` passed all seven hosted jobs:
+Python 3.10 through 3.13 on Ubuntu, Python 3.10 and 3.13 on Windows, and the
+isolated package job.
 
 ## Repository assessment
 
@@ -222,7 +223,7 @@ coverage, and production readiness. Those claims were false at baseline.
 - [x] Add seeded invariants and a bounded synthetic throughput smoke.
 - [ ] Add formal fuzz/property suites and representative consented corpora for
   detector and parser boundaries.
-- [ ] Publish signed artifacts and provenance attestations after owner approval.
+- [x] Automate tokenless PyPI publication and provenance attestations after owner approval.
 
 ## Implementation checklist
 
@@ -273,12 +274,15 @@ proprietary works. `LICENSE`, package metadata, `NOTICE`, `LICENSING.md`,
 `CONTRIBUTING.md`, `TRADEMARKS.md`, and the user documentation now agree. Formal
 legal advice remains the owner's responsibility.
 
-### Publication gate
+### Publication path
 
-No package index project, signing identity, release token, or protected publishing
-environment was provided. The owner must approve a public release, configure
-trusted publishing, and verify installation from the public index. No package was
-published or production infrastructure changed in this work.
+`.github/workflows/release.yml` builds distributions in a job without publishing
+credentials, verifies and smoke-tests them, and passes the build artifact to a
+separate PyPI environment. That job uses Trusted Publishing and short-lived OIDC
+credentials; it stores no package-index token and generates PyPI attestations by
+default. After publication, the same wheel and source distribution plus their
+SHA-256 checksums are attached to the GitHub release. The operational runbook is
+in `docs/RELEASING.md`.
 
 ### Legacy portfolio decision
 
@@ -379,7 +383,8 @@ wheel is independently installable. It should not be publicly published or
 described as production-ready until the owner approves the version and
 publication/signing path.
 
-Remaining work ordered by value is the publication gate above, then the
-P2 detector-locale fixtures, fuzz/performance suite, transactional streaming for
-larger JSONL inputs, safe organization policy schema, and signed artifact
-provenance. None is silently required for the documented local 0.2.0 journey.
+At 0.2, the remaining work was the publication gate. The 0.3 release automation
+now addresses that path; detector-locale fixtures, fuzz/performance evaluation,
+transactional streaming for larger JSONL inputs, a real consumer, and usage
+evidence remain follow-up work. None was silently required for the documented
+local 0.2.0 journey.

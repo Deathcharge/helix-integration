@@ -24,6 +24,10 @@ the supported package API.
   landscape.
 - Added formatter and Bandit gates to CI plus weekly Python and GitHub Actions
   dependency update checks.
+- Added a least-privilege Trusted Publishing workflow that builds once, publishes
+  to PyPI with short-lived OIDC credentials and attestations, and attaches the
+  same verified distributions plus SHA-256 checksums to GitHub.
+- Added a fail-closed release metadata gate and a maintainer release runbook.
 - Fixed batch and SARIF report paths for Windows inputs located on a different
   drive from the working directory without exposing absolute host paths.
 

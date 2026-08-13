@@ -32,7 +32,7 @@ terms. Package builds contain only the supported `samsarix_guard` code.
 
 Changing the license for the current tree does not revoke permissions already
 granted for copies of historical revisions under the license distributed with
-those revisions. The current `0.2.0` release candidate uses MPL-2.0.
+those revisions. The current `0.3.0` release uses MPL-2.0.
 
 ## Contributions
 

@@ -1,5 +1,10 @@
 # Samsarix Integration Guard
 
+[![CI](https://github.com/Deathcharge/samsarix-integration-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/Deathcharge/samsarix-integration-guard/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/samsarix-integration-guard.svg)](https://pypi.org/project/samsarix-integration-guard/)
+[![Python](https://img.shields.io/pypi/pyversions/samsarix-integration-guard.svg)](https://pypi.org/project/samsarix-integration-guard/)
+[![License: MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](LICENSE)
+
 Samsarix Integration Guard is a local Python library and command-line tool from
 Samsarix LLC that
 detects and redacts common secrets and personally identifiable information (PII)
@@ -9,13 +14,23 @@ It is for developers and operators who need a small, auditable safety layer in a
 integration pipeline. It has no runtime dependencies, makes no network requests,
 and reports categories and counts without echoing detected values.
 
-> **Maturity:** 0.3.0 release candidate. The supported redaction path is tested;
+> **Maturity:** 0.3.0 beta. The supported redaction path is tested;
 > automated pattern matching is not a compliance guarantee and cannot identify
 > every form of sensitive data.
 
 ## Quick start
 
-Prerequisites: Python 3.10 or newer.
+Prerequisites: Python 3.10 or newer; CI currently verifies Python 3.10 through
+3.13.
+
+For the published 0.3.0 release:
+
+```console
+python -m pip install samsarix-integration-guard==0.3.0
+samsarix-guard redact examples/sample-event.json
+```
+
+To work from a source checkout instead:
 
 ```console
 git clone https://github.com/Deathcharge/samsarix-integration-guard.git
@@ -187,7 +202,8 @@ python scripts/verify_distribution.py dist
 
 The CI workflow runs these checks on Python 3.10 through 3.13 on Linux and at the
 supported-version boundaries on Windows. See
-[`CONTRIBUTING.md`](CONTRIBUTING.md) for the change workflow and
+[`CONTRIBUTING.md`](CONTRIBUTING.md) for the change workflow,
+[`docs/RELEASING.md`](docs/RELEASING.md) for tokenless publication, and
 [`docs/PRODUCTIZATION.md`](docs/PRODUCTIZATION.md) for the evidence and release
 record.
 
