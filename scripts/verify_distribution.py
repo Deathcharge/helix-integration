@@ -8,6 +8,8 @@ import zipfile
 from email.parser import BytesParser
 from pathlib import Path
 
+from verify_release import project_version
+
 REQUIRED_MODULES = {
     "samsarix_guard/__init__.py",
     "samsarix_guard/__main__.py",
@@ -28,6 +30,7 @@ REQUIRED_SDIST_FILES = {
     "SUPPORT.md",
     "TRADEMARKS.md",
     "action.yml",
+    "docs/RELEASING.md",
 }
 
 
@@ -35,7 +38,7 @@ def fail(message: str) -> None:
     raise SystemExit(f"distribution verification failed: {message}")
 
 
-def verify_wheel(path: Path) -> None:
+def verify_wheel(path: Path, expected_version: str) -> None:
     with zipfile.ZipFile(path) as archive:
         names = set(archive.namelist())
         missing = REQUIRED_MODULES - names
@@ -53,6 +56,8 @@ def verify_wheel(path: Path) -> None:
         metadata = BytesParser().parsebytes(archive.read(metadata_names[0]))
         if metadata.get("Name") != "samsarix-integration-guard":
             fail(f"wheel has unexpected project name: {metadata.get('Name')!r}")
+        if metadata.get("Version") != expected_version:
+            fail(f"wheel has unexpected version: {metadata.get('Version')!r}")
         if metadata.get("License-Expression") != "MPL-2.0":
             fail(f"wheel has unexpected license: {metadata.get('License-Expression')!r}")
         runtime_requirements = [
@@ -75,9 +80,12 @@ def verify_wheel(path: Path) -> None:
             fail("wheel does not expose the samsarix-guard command")
 
 
-def verify_sdist(path: Path) -> None:
+def verify_sdist(path: Path, expected_version: str) -> None:
     with tarfile.open(path, "r:gz") as archive:
         names = set(archive.getnames())
+        expected_root = f"samsarix_integration_guard-{expected_version}"
+        if not names or any(name != expected_root and not name.startswith(f"{expected_root}/") for name in names):
+            fail(f"source distribution root does not match version {expected_version}")
         if any("/legacy/" in name.casefold() or "/helix_unified_snapshot/" in name.casefold() for name in names):
             fail("source distribution contains the unsupported legacy snapshot")
         suffixes = {name.split("/", 1)[-1] for name in names}
@@ -95,8 +103,9 @@ def main(arguments: list[str]) -> int:
     sdists = sorted(directory.glob("*.tar.gz"))
     if len(wheels) != 1 or len(sdists) != 1:
         fail(f"expected one wheel and one sdist in {directory}")
-    verify_wheel(wheels[0])
-    verify_sdist(sdists[0])
+    expected_version = project_version()
+    verify_wheel(wheels[0], expected_version)
+    verify_sdist(sdists[0], expected_version)
     print(f"verified {wheels[0].name} and {sdists[0].name}")
     return 0
 
